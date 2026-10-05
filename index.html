@@ -8,7 +8,7 @@
 button,select,input{font:inherit;color:inherit;background:var(--p2);border:1px solid var(--bd);border-radius:5px;padding:7px 10px}
 button{cursor:pointer;min-height:36px}button:hover{border-color:var(--b)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--b)}
 button.pri{background:#1f6feb;border-color:#1f6feb;color:#fff}button.dn{border-color:var(--r);color:var(--r)}button.ok{border-color:var(--g);color:var(--g)}
-#top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:8px 14px;background:var(--p);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
+<!-- #top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:8px 14px;background:var(--p);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5} -->
 #top small{display:block;color:var(--mu);font-size:11px}#top b{font-size:13px}
 nav{display:flex;gap:2px;overflow-x:auto;background:var(--p);border-bottom:1px solid var(--bd);padding:0 8px}
 nav button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;white-space:nowrap}nav button.on{border-color:var(--b);color:var(--b)}
@@ -61,7 +61,7 @@ function mkt(){const p=et(),m=p.min,wd=['Sat','Sun'].indexOf(p.weekday)<0;let s=
  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];let nx;if(wd&&m<570)nx='Today 09:30 ET';else{let i=days.indexOf(p.weekday)+1;nx=days[i%7];if(nx==='Sat')nx='Mon';if(nx==='Sun')nx='Mon';nx+=' 09:30 ET'}
  return{s,open,nx,p}}
 /* ============ CONFIG / STATE ============ */
-const DEF={minScore:65,minVol:100,minOI:500,maxSpread:8,minUVol:0,dMin:.35,dMax:.65,minDTE:0,maxDTE:45,minRR1:1.5,minRR2:2,sl1:1,sl2:1.5,t1:1.5,t2:2.5,maxIVHV:2.5,maxCap:10000,maxRisk:500,maxOpen:5,feePerContract:0.65,autoClose:false,refresh:30,chart:'tv',primary:'polygon'};
+const DEF={minScore:65,minVol:100,minOI:500,maxSpread:8,minUVol:0,dMin:.35,dMax:.65,minDTE:0,maxDTE:45,minRR1:1.5,minRR2:2,sl1:1,sl2:1.5,t1:1.5,t2:2.5,maxIVHV:2.5,maxCap:10000,maxRisk:500,maxOpen:5,feePerContract:0.65,autoClose:false,refresh:30,chart:'moomoo',primary:'polygon'};
 const state={tab:'overview',mode:'none',settings:{...DEF,...LS.get('opt_settings',{})},
  watch:LS.get('opt_watch',['NVDA','AAPL','MSFT','AMZN','META','GOOGL','TSLA','AMD','AVGO','NFLX','JPM','BAC','AMAT','MU','QCOM','PLTR','SPY','QQQ','IWM','DIA']),
  trades:LS.get('opt_trades',[]),view:'live',
@@ -212,8 +212,9 @@ function stats(sim){const all=state.trades.filter(t=>t.sim===sim),cl=all.filter(
  return{n:all.length,cl:cl.length,w:w.length,l:l.length,wr:cl.length?w.length/cl.length*100:null,re,un,tot:re+un,gp,gl,aw:w.length?gp/w.length:null,al:l.length?gl/l.length:null,mw:w.length?Math.max(...w.map(t=>t.pnl)):null,ml:l.length?Math.min(...l.map(t=>t.pnl)):null,pf:gl?gp/-gl:null,avg:cl.length?re/cl.length:null,hold:cl.length?avg(cl.map(t=>t.exitTime-t.entryTime))/6e4:null,td:td+un*0,wk:per(7*864e5),mo:per(30*864e5)}}
 /* ============ CHART LINKS ============ */
 function chartLink(p){const prov=state.settings.chart;if(prov==='yahoo')return{url:'https://finance.yahoo.com/quote/'+p.occ,direct:true};
- return{url:'https://www.tradingview.com/chart/?symbol='+encodeURIComponent(p.sym),direct:false}}
-function openChart(sym,dir,exp,strike,type){const o={sym,occ:occ(sym,exp,type,strike)},c=chartLink(o);if(!c.direct)toast('Direct option chart unavailable — opening underlying chart.');window.open(c.url,'_blank','noopener')}
+ return{url:'https://www.moomoo.com/options/'+p.mooOcc+'-US',direct:true}}
+function openChart(sym,dir,exp,strike,type){const mooOcc=sym+exp.slice(2,4)+exp.slice(5,7)+exp.slice(8,10)+type+Math.round(strike*1000);
+ const o={sym,occ:occ(sym,exp,type,strike),mooOcc},c=chartLink(o);if(!c.direct)toast('Direct option chart unavailable — opening underlying chart.');window.open(c.url,'_blank','noopener')}
 /* ============ UI ============ */
 const TABS=[['overview','OVERVIEW'],['picks','AUTO-PICKS'],['chain','OPTIONS CHAIN'],['tech','TECHNICAL ANALYSIS'],['paper','PAPER TRADING'],['journal','TRADE JOURNAL'],['watch','WATCHLIST'],['settings','SETTINGS'],['data','DATA SOURCES']];
 const ST={LIVE:['🟢','LIVE','g'],DELAYED:['🟡','DELAYED','y'],SIM:['🔵','SIMULATED (DEMO)','bl'],OFFLINE:['🔴','OFFLINE','r'],CLOSEDDATA:['🟡','LAST SESSION DATA (market closed)','y']};
@@ -270,7 +271,7 @@ function vJournal(){const C=state.trades.filter(t=>t.status==='CLOSED').sort((a,
 function vWatch(){return`<div class="card"><div class="btns"><input id="wsym" placeholder="Add ticker e.g. NVDA" maxlength="6" style="max-width:200px"><button class="pri" data-a="wadd">Add</button><button data-a="wreset">Reset list</button></div><p class="mu">Context symbols (SPY, QQQ, IWM, DIA, VIX) are always analysed. SPX/NDX/VIX have no directly tradeable options here — use SPY/QQQ as proxies.</p><div>${state.watch.map(s=>`<span class="tag">${s} <a href="#" data-a="wdel" data-v="${s}" style="color:var(--r);text-decoration:none">✕</a></span>`).join(' ')}</div></div>`}
 const FIELDS=[['minScore','Minimum score','n'],['minVol','Min option volume','n'],['minOI','Min open interest','n'],['maxSpread','Max bid/ask spread %','n'],['minUVol','Min underlying volume','n'],['dMin','Min |delta|','n'],['dMax','Max |delta|','n'],['minDTE','Min DTE','n'],['maxDTE','Max DTE','n'],['minRR1','Min R:R to T1','n'],['minRR2','Min R:R to T2','n'],['sl1','SL1 (× ATR)','n'],['sl2','SL2 (× ATR)','n'],['t1','Target 1 (× ATR)','n'],['t2','Target 2 (× ATR)','n'],['maxIVHV','Max IV / realized-vol ratio','n'],['maxCap','Max paper capital $','n'],['maxRisk','Max risk per trade $','n'],['maxOpen','Max simultaneous trades','n'],['feePerContract','Commission fee per contract$ (e.g. Moomoo)','n']];
 function vSettings(){const s=state.settings;return`<div class="card"><h2>Signal & risk settings</h2><div class="form">${FIELDS.map(f=>`<div><label>${f[1]}</label><input type="number" step="any" data-a="set" data-k="${f[0]}" value="${s[f[0]]}"></div>`).join('')}
- <div><label>Chart provider</label><select data-a="setc"><option value="tv" ${s.chart==='tv'?'selected':''}>TradingView (underlying chart only)</option><option value="yahoo" ${s.chart==='yahoo'?'selected':''}>Yahoo Finance (exact option contract page)</option></select></div>
+ <div><label>Chart provider</label><select data-a="setc"><option value="moomoo" ${s.chart!=='yahoo'?'selected':''}>Moomoo (exact option contract page)</option><option value="yahoo" ${s.chart==='yahoo'?'selected':''}>Yahoo Finance (exact option contract page)</option></select></div>
  <div><label>Auto-close paper trades at Stop 2 / Target 2</label><select data-a="setac"><option value="0" ${!s.autoClose?'selected':''}>Off (alerts only)</option><option value="1" ${s.autoClose?'selected':''}>On</option></select></div></div>
  <p class="mu">Stops/targets: underlying levels are ATR multiples from entry; option levels are projected with delta + gamma. Settings apply on the next refresh.</p><div class="btns"><button data-a="sreset">Restore defaults</button></div></div>`}
 function connChip(id){const c=state.conn[id];return`<span class="tag ${/^Connected/.test(c)?'g':/Failed/.test(c)?'r':'y'}">${esc(c)}</span>`}
