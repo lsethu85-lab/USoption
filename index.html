@@ -8,7 +8,7 @@
 button,select,input{font:inherit;color:inherit;background:var(--p2);border:1px solid var(--bd);border-radius:5px;padding:7px 10px}
 button{cursor:pointer;min-height:36px}button:hover{border-color:var(--b)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--b)}
 button.pri{background:#1f6feb;border-color:#1f6feb;color:#fff}button.dn{border-color:var(--r);color:var(--r)}button.ok{border-color:var(--g);color:var(--g)}
-<!-- #top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:8px 14px;background:var(--p);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5} -->
+#top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:8px 14px;background:var(--p);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
 #top small{display:block;color:var(--mu);font-size:11px}#top b{font-size:13px}
 nav{display:flex;gap:2px;overflow-x:auto;background:var(--p);border-bottom:1px solid var(--bd);padding:0 8px}
 nav button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;white-space:nowrap}nav button.on{border-color:var(--b);color:var(--b)}
@@ -23,7 +23,7 @@ h2{margin:6px 0 10px;font-size:18px}h3{margin:14px 0 6px;font-size:15px}
 .pick.call{border-left:4px solid var(--g)}.pick.put{border-left:4px solid var(--r)}
 .ph{display:flex;align-items:center;gap:4px;font-size:16px}.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 10px;margin:8px 0}
 .kv div span{display:block;color:var(--mu);font-size:11px}.kv div b{font-size:13px}
-.why{font-size:13px;margin:6px 0}.why div{padding:1px 0}.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.why{font-size:13px;margin:6px 0}.why div{padding:1px 0}.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:5px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}th{color:var(--mu);font-weight:600;position:sticky;top:0;background:var(--p)}
 td:first-child,th:first-child,td.l,th.l{text-align:left}.sc{overflow-x:auto;max-height:70vh}
 tr.hit-t td{background:#12301f}tr.hit-s td{background:#3a161b}tr.atm td{background:#1b2a3d}tr.hi td{font-weight:700}
@@ -192,29 +192,37 @@ function updateTrades(){state.trades.forEach(t=>{if(t.status!=='OPEN'||t.sim!==c
  if(state.settings.autoClose&&t.cur!=null&&/STOP 2|TARGET 2/.test(tStatus(t)))closeTrade(t.id,t.cur,true)});save()}
 function tStatus(t){if(t.status==='CLOSED')return'CLOSED';if(t.cur==null)return'NO PRICE';const c=t.cur;return c<=t.sl2?'STOP 2 HIT':c<=t.sl1?'STOP 1 HIT':c>=t.t2?'TARGET 2 HIT':c>=t.t1?'TARGET 1 HIT':'WAITING'}
 const tpl=t=>{
- const f = state.settings.feePerContract || 0;
- return t.status==='CLOSED' ? t.pnl : t.cur==null ? null : (t.cur-t.entry)*100*t.qty - (t.qty*f);
+ const f=state.settings.feePerContract||0;
+ return t.status==='CLOSED'?t.pnl:t.cur==null?null:(t.cur-t.entry)*100*t.qty-(t.qty*f);
 };
 function addPaper(id){const p=state.picks.find(x=>x.id===id);if(!p)return;const miss=[];
  if(!p.sym)miss.push('underlying');if(!p.exp)miss.push('expiration');if(!p.strike)miss.push('strike');if(!p.type)miss.push('call/put');if(!(p.mid>0))miss.push('option price');if(!p.dataTs)miss.push('data timestamp');
  if(miss.length)return toast('BLOCKED — missing: '+miss.join(', '));
  const s=state.settings,open=state.trades.filter(t=>t.status==='OPEN'&&t.sim===p.sim);if(open.length>=s.maxOpen)return toast('BLOCKED — max simultaneous trades ('+s.maxOpen+') reached');
- const rpc=(p.o.entry-p.o.sl1)*100,q=Math.max(1,Math.min(Math.floor(s.maxRisk/Math.max(rpc,1)),Math.floor(s.maxCap/(p.mid*100))));
- if(p.mid*100>s.maxCap)return toast('BLOCKED — one contract exceeds max paper capital');
+ const qInput=document.querySelector(`input[data-a="set-pick-qty"][data-id="${id}"]`);
+ const rpc=(p.o.entry-p.o.sl1)*100,defQ=Math.max(1,Math.min(Math.floor(s.maxRisk/Math.max(rpc,1)),Math.floor(s.maxCap/(p.mid*100))));
+ let q=qInput?parseInt(qInput.value,10):(p.customQty||defQ);
+ if(isNaN(q)||q<1)q=1;
+ if(p.mid*100*q>s.maxCap&&s.maxCap>0){if(!confirm(`Total position ($${nf(p.mid*100*q)}) exceeds max paper capital ($${nf(s.maxCap)}). Add anyway?`))return}
  state.trades.push({id:'T'+Date.now(),sym:p.sym,dir:p.dir,type:p.type,exp:p.exp,strike:p.strike,occ:p.occ,entry:p.mid,qty:q,entryTime:Date.now(),t1:p.o.t1,t2:p.o.t2,sl1:p.o.sl1,sl2:p.o.sl2,score:p.score,reason:p.why.filter(x=>x[0]==='✓').join('; '),src:p.src,sim:p.sim,status:'OPEN',cur:p.mid,curTime:Date.now()});
  save();toast('Added to paper trading ('+q+' contract'+(q>1?'s':'')+')');refresh()}
 function closeTrade(id,px,quiet){const t=state.trades.find(x=>x.id===id);if(!t||t.status!=='OPEN')return;
  if(px==null){const v=prompt('No current price available. Enter exit price for '+t.occ+':');px=parseFloat(v);if(!(px>=0))return}
- const f = state.settings.feePerContract || 0;
- t.exit=px;t.exitTime=Date.now();t.pnl=(px-t.entry)*100*t.qty - (t.qty*f*2);t.status='CLOSED';save();if(!quiet)toast('Closed: '+pl(t.pnl));refresh()}
+ const f=state.settings.feePerContract||0;
+ t.exit=px;t.exitTime=Date.now();t.pnl=(px-t.entry)*100*t.qty-(t.qty*f*2);t.status='CLOSED';save();if(!quiet)toast('Closed: '+pl(t.pnl));refresh()}
 function stats(sim){const all=state.trades.filter(t=>t.sim===sim),cl=all.filter(t=>t.status==='CLOSED'),w=cl.filter(t=>t.pnl>0),l=cl.filter(t=>t.pnl<=0),un=all.filter(t=>t.status==='OPEN').reduce((a,t)=>a+(tpl(t)||0),0),re=cl.reduce((a,t)=>a+t.pnl,0),gp=w.reduce((a,t)=>a+t.pnl,0),gl=l.reduce((a,t)=>a+t.pnl,0);
  const per=ms=>cl.filter(t=>t.exitTime>=Date.now()-ms).reduce((a,t)=>a+t.pnl,0),td=cl.filter(t=>et(new Date(t.exitTime)).date===et().date).reduce((a,t)=>a+t.pnl,0);
  return{n:all.length,cl:cl.length,w:w.length,l:l.length,wr:cl.length?w.length/cl.length*100:null,re,un,tot:re+un,gp,gl,aw:w.length?gp/w.length:null,al:l.length?gl/l.length:null,mw:w.length?Math.max(...w.map(t=>t.pnl)):null,ml:l.length?Math.min(...l.map(t=>t.pnl)):null,pf:gl?gp/-gl:null,avg:cl.length?re/cl.length:null,hold:cl.length?avg(cl.map(t=>t.exitTime-t.entryTime))/6e4:null,td:td+un*0,wk:per(7*864e5),mo:per(30*864e5)}}
 /* ============ CHART LINKS ============ */
-function chartLink(p){const prov=state.settings.chart;if(prov==='yahoo')return{url:'https://finance.yahoo.com/quote/'+p.occ,direct:true};
- return{url:'https://www.moomoo.com/options/'+p.mooOcc+'-US',direct:true}}
-function openChart(sym,dir,exp,strike,type){const mooOcc=sym+exp.slice(2,4)+exp.slice(5,7)+exp.slice(8,10)+type+Math.round(strike*1000);
- const o={sym,occ:occ(sym,exp,type,strike),mooOcc},c=chartLink(o);if(!c.direct)toast('Direct option chart unavailable — opening underlying chart.');window.open(c.url,'_blank','noopener')}
+function chartLink(p){const prov=state.settings.chart;
+ if(prov==='yahoo')return{url:'https://finance.yahoo.com/quote/'+p.occ,direct:true};
+ if(prov==='tv')return{url:'https://www.tradingview.com/chart/?symbol='+encodeURIComponent(p.sym),direct:false};
+ return{url:'https://www.moomoo.com/stock/'+p.mooOcc+'-US',direct:true}}
+function openChart(sym,dir,exp,strike,type){
+ const mooOcc=sym+exp.slice(2,4)+exp.slice(5,7)+exp.slice(8,10)+type+Math.round(strike*1000);
+ const o={sym,occ:occ(sym,exp,type,strike),mooOcc},c=chartLink(o);
+ if(!c.direct)toast('Direct option chart unavailable — opening underlying chart.');
+ window.open(c.url,'_blank','noopener')}
 /* ============ UI ============ */
 const TABS=[['overview','OVERVIEW'],['picks','AUTO-PICKS'],['chain','OPTIONS CHAIN'],['tech','TECHNICAL ANALYSIS'],['paper','PAPER TRADING'],['journal','TRADE JOURNAL'],['watch','WATCHLIST'],['settings','SETTINGS'],['data','DATA SOURCES']];
 const ST={LIVE:['🟢','LIVE','g'],DELAYED:['🟡','DELAYED','y'],SIM:['🔵','SIMULATED (DEMO)','bl'],OFFLINE:['🔴','OFFLINE','r'],CLOSEDDATA:['🟡','LAST SESSION DATA (market closed)','y']};
@@ -228,12 +236,17 @@ function banners(){let h='';if(state.mode==='demo')h+=`<div class="banner bl">�
  if(state.fail.length&&state.status!=='SIM')h+=`<div class="banner r">🔴 <b>${state.status==='OFFLINE'?'MARKET DATA OFFLINE':'PRIMARY DATA SOURCE FAILED — fallback used'}</b><br>${state.fail.map(esc).join('<br>')}</div>`;
  if(state.mode==='live'&&!mkt().open)h+=`<div class="banner y">MARKET CLOSED — normal intraday signals are suspended. Next open: ${mkt().nx}.</div>`;return h}
 function kv(a,b){return`<div><span>${a}</span><b>${b}</b></div>`}
-function card(p){const r=p.r,c=p.dir>0;return`<div class="card pick ${c?'call':'put'}"><div class="ph"><b>${p.sym}</b><span class="tag ${c?'g':'r'}">${c?'▲ CALL':'▼ PUT'}</span><span class="tag ${p.score>=85?'g':p.score>=75?'bl':'y'}">${p.lbl}</span>${p.sim?'<span class="tag bl">SIM</span>':''}</div>
+function card(p){const r=p.r,c=p.dir>0;
+ const rpc=(p.o.entry-p.o.sl1)*100,defQ=Math.max(1,Math.min(Math.floor(state.settings.maxRisk/Math.max(rpc,1)),Math.floor(state.settings.maxCap/(p.mid*100))));
+ const curQ=p.customQty||defQ;
+ return`<div class="card pick ${c?'call':'put'}"><div class="ph"><b>${p.sym}</b><span class="tag ${c?'g':'r'}">${c?'▲ CALL':'▼ PUT'}</span><span class="tag ${p.score>=85?'g':p.score>=75?'bl':'y'}">${p.lbl}</span>${p.sim?'<span class="tag bl">SIM</span>':''}</div>
  <div class="mu">$${p.strike} strike · ${p.exp} · ${p.occ}</div><div style="margin:6px 0">Technical Confluence <b style="font-size:18px">${p.score}/100</b></div>
  <div class="kv">${kv('Underlying',$$(p.an.c))}${kv('Option',$$(p.mid))}${kv('Spread',nf(p.sp,1)+'%')}${kv('Bid / Ask',nf(r.bid)+' / '+nf(r.ask))}${kv('Volume',nf(r.vol,0))}${kv('Open int.',nf(r.oi,0))}${kv('IV',nf(r.iv*100,1)+'%')}${kv('Delta',nf(r.delta))}${kv('Theta',nf(r.theta))}
  ${kv('Entry',$$(p.o.entry))}${kv('SL1 / SL2',$$(p.o.sl1)+' / '+$$(p.o.sl2))}${kv('T1 / T2',$$(p.o.t1)+' / '+$$(p.o.t2))}${kv('R:R T1',nf(p.rr1))}${kv('R:R T2',nf(p.rr2))}${kv('RSI',nf(p.an.rsi,0))}</div>
  <div class="why">${p.why.slice(0,5).map(esc).map(x=>`<div class="${x[0]==='✓'?'g':'y'}">${x}</div>`).join('')}</div><div class="mu" style="font-size:11px">${esc(p.src)} · signal ${et(new Date(p.ts)).hour}:${et(new Date(p.ts)).minute} ET</div>
- <div class="btns"><button data-a="chart" data-id="${p.id}">📈 Chart</button><button data-a="detail" data-id="${p.id}">Why / plan</button><button class="ok" data-a="add" data-id="${p.id}">ADD TO PAPER</button><button class="dn" data-a="rej" data-id="${p.id}">Reject</button></div></div>`}
+ <div class="btns"><button data-a="chart" data-id="${p.id}">📈 Chart</button><button data-a="detail" data-id="${p.id}">Why / plan</button>
+ <div style="display:inline-flex;align-items:center;gap:4px;background:var(--p2);border:1px solid var(--bd);border-radius:5px;padding:0 6px"><label style="margin:0;font-size:11px;color:var(--mu)">Qty</label><input type="number" min="1" max="500" value="${curQ}" data-a="set-pick-qty" data-id="${p.id}" style="width:48px;padding:4px 2px;border:none;background:transparent;text-align:center;font-weight:700" title="Contracts to buy"></div>
+ <button class="ok" data-a="add" data-id="${p.id}">ADD TO PAPER</button><button class="dn" data-a="rej" data-id="${p.id}">Reject</button></div></div>`}
 function vOverview(){const rg=state.regime,c=state.counts||{},q=state.picks.filter(p=>p.score>=75).length,h=state.picks.filter(p=>p.score>=85).length;
  if(state.mode==='none')return`<div class="card"><h2>US OPTIONS TRADING DASHBOARD</h2><p>Data provider: <b>NOT CONFIGURED</b> · Status: <b class="r">🔴 OFFLINE</b></p><p class="mu">No market data is shown until you connect a real source or explicitly enable the clearly-labelled demo. This tool is for analysis and paper trading only — it cannot place real orders and no setup is guaranteed to profit.</p><div class="btns"><button class="pri" data-a="tab" data-v="data">CONFIGURE DATA SOURCE</button><button data-a="demo">ENABLE DEMO MODE</button></div></div>`;
  const rows=CTX.map(s=>{const a=state.an[s];return a?`<tr><td>${s}</td><td>${$$(a.c)}</td><td>${lab(a.e9>a.e20?1:-1)}</td><td>${a.c>a.vwap?'<span class="g">Above</span>':'<span class="r">Below</span>'}</td><td>${nf(a.rsi,0)}</td></tr>`:`<tr><td>${s}</td><td colspan="4" class="mu">no data</td></tr>`}).join('');
@@ -262,8 +275,10 @@ function vPaper(){const sim=curSim()||state.mode==='none'&&state.view==='demo',v
  const st=(a,b,c='')=>`<div class="stat"><span>${a}</span><b class="${c}">${b}</b></div>`;
  return`<div class="card"><label>Showing paper trades from</label><select data-a="view"><option value="live" ${!v?'selected':''}>Live-data paper trades</option><option value="demo" ${v?'selected':''}>DEMO (simulated) paper trades</option></select></div>
  <div class="stats">${st('TOTAL P&L',pl(S.tot),cls(S.tot))}${st('REALIZED',pl(S.re),cls(S.re))}${st('UNREALIZED',pl(S.un),cls(S.un))}${st('TODAY (realized)',pl(S.td),cls(S.td))}${st('WIN RATE',S.wr==null?'—':nf(S.wr,0)+'%')}${st('TRADES',S.n)}${st('W / L',S.w+' / '+S.l)}</div>
- <h3>Open paper trades</h3>${T.length?`<div class="card sc"><table><tr><th>Status</th><th>Ticker</th><th>C/P</th><th>Exp</th><th>Strike</th><th>Entry</th><th>Current</th><th>Qty</th><th>Entered</th><th>T1</th><th>T2</th><th>SL1</th><th>SL2</th><th>P&L</th><th>P&L %</th><th>Risk $</th><th>Score</th><th></th></tr>${T.map(t=>{const s=tStatus(t),p=tpl(t),rk=(t.entry-t.sl1)*100*t.qty;return`<tr class="${/TARGET/.test(s)?'hit-t':/STOP/.test(s)?'hit-s':''}"><td>${s==='WAITING'?'⏳':/TARGET/.test(s)?'🎯':/STOP/.test(s)?'🛑':'—'} ${s}</td><td>${t.sym}</td><td class="${t.dir>0?'g':'r'}">${t.dir>0?'CALL':'PUT'}</td><td>${t.exp}</td><td>${t.strike}</td><td>${$$(t.entry)}</td><td>${$$(t.cur)}</td><td>${t.qty}</td><td>${et(new Date(t.entryTime)).hour}:${et(new Date(t.entryTime)).minute}</td><td>${nf(t.t1)}</td><td>${nf(t.t2)}</td><td>${nf(t.sl1)}</td><td>${nf(t.sl2)}</td><td class="${cls(p)}">${pl(p)}</td><td class="${cls(p)}">${p==null?'—':nf(p/(t.entry*100*t.qty)*100,1)+'%'}</td><td>${$$(rk)}</td><td>${t.score}</td>
- <td><button data-a="qty" data-id="${t.id}">+ Qty</button> <button class="ok" data-a="close" data-id="${t.id}">CLOSE</button> <button class="dn" data-a="del" data-id="${t.id}">DELETE</button> <button data-a="tchart" data-id="${t.id}">📈</button></td></tr>`}).join('')}</table></div>`:'<div class="card mu">No open paper trades. Add one from Auto-Picks.</div>'}
+ <h3>Open paper trades</h3>${T.length?`<div class="card sc"><table><tr><th>Status</th><th>Ticker</th><th>C/P</th><th>Exp</th><th>Strike</th><th>Entry</th><th>Current</th><th>Qty</th><th>Entered</th><th>T1</th><th>T2</th><th>SL1</th><th>SL2</th><th>P&L</th><th>P&L %</th><th>Risk $</th><th>Score</th><th></th></tr>${T.map(t=>{const s=tStatus(t),p=tpl(t),rk=(t.entry-t.sl1)*100*t.qty;return`<tr class="${/TARGET/.test(s)?'hit-t':/STOP/.test(s)?'hit-s':''}"><td>${s==='WAITING'?'⏳':/TARGET/.test(s)?'🎯':/STOP/.test(s)?'🛑':'—'} ${s}</td><td>${t.sym}</td><td class="${t.dir>0?'g':'r'}">${t.dir>0?'CALL':'PUT'}</td><td>${t.exp}</td><td>${t.strike}</td><td>${$$(t.entry)}</td><td>${$$(t.cur)}</td>
+ <td><a href="#" data-a="edit-qty" data-id="${t.id}" title="Click to edit quantity" style="color:var(--b);font-weight:700;text-decoration:underline">${t.qty}</a></td>
+ <td>${et(new Date(t.entryTime)).hour}:${et(new Date(t.entryTime)).minute}</td><td>${nf(t.t1)}</td><td>${nf(t.t2)}</td><td>${nf(t.sl1)}</td><td>${nf(t.sl2)}</td><td class="${cls(p)}">${pl(p)}</td><td class="${cls(p)}">${p==null?'—':nf(p/(t.entry*100*t.qty)*100,1)+'%'}</td><td>${$$(rk)}</td><td>${t.score}</td>
+ <td><button data-a="edit-qty" data-id="${t.id}">✏️ Edit Qty</button> <button class="ok" data-a="close" data-id="${t.id}">CLOSE</button> <button class="dn" data-a="del" data-id="${t.id}">DELETE</button> <button data-a="tchart" data-id="${t.id}">📈</button></td></tr>`}).join('')}</table></div>`:'<div class="card mu">No open paper trades. Add one from Auto-Picks.</div>'}
  <h3>Performance (closed trades, ${v?'demo':'live-data'} only)</h3><div class="stats">${st('Gross profit',pl(S.gp),'g')}${st('Gross loss',pl(S.gl),'r')}${st('Profit factor',S.pf==null?'—':nf(S.pf))}${st('Avg trade',pl(S.avg))}${st('Avg win',pl(S.aw))}${st('Avg loss',pl(S.al))}${st('Largest win',pl(S.mw))}${st('Largest loss',pl(S.ml))}${st('Avg hold',S.hold==null?'—':nf(S.hold,0)+' min')}${st('This week',pl(S.wk))}${st('This month',pl(S.mo))}</div>
  <p class="mu">P&L = [(current premium − entry premium) × 100 × quantity] − fees, for both calls and puts (you hold long options). Browser storage can be erased if you clear site data — export the journal regularly. No real orders can be placed from this app.</p>`}
 function vJournal(){const C=state.trades.filter(t=>t.status==='CLOSED').sort((a,b)=>b.exitTime-a.exitTime);
@@ -271,7 +286,7 @@ function vJournal(){const C=state.trades.filter(t=>t.status==='CLOSED').sort((a,
 function vWatch(){return`<div class="card"><div class="btns"><input id="wsym" placeholder="Add ticker e.g. NVDA" maxlength="6" style="max-width:200px"><button class="pri" data-a="wadd">Add</button><button data-a="wreset">Reset list</button></div><p class="mu">Context symbols (SPY, QQQ, IWM, DIA, VIX) are always analysed. SPX/NDX/VIX have no directly tradeable options here — use SPY/QQQ as proxies.</p><div>${state.watch.map(s=>`<span class="tag">${s} <a href="#" data-a="wdel" data-v="${s}" style="color:var(--r);text-decoration:none">✕</a></span>`).join(' ')}</div></div>`}
 const FIELDS=[['minScore','Minimum score','n'],['minVol','Min option volume','n'],['minOI','Min open interest','n'],['maxSpread','Max bid/ask spread %','n'],['minUVol','Min underlying volume','n'],['dMin','Min |delta|','n'],['dMax','Max |delta|','n'],['minDTE','Min DTE','n'],['maxDTE','Max DTE','n'],['minRR1','Min R:R to T1','n'],['minRR2','Min R:R to T2','n'],['sl1','SL1 (× ATR)','n'],['sl2','SL2 (× ATR)','n'],['t1','Target 1 (× ATR)','n'],['t2','Target 2 (× ATR)','n'],['maxIVHV','Max IV / realized-vol ratio','n'],['maxCap','Max paper capital $','n'],['maxRisk','Max risk per trade $','n'],['maxOpen','Max simultaneous trades','n'],['feePerContract','Commission fee per contract$ (e.g. Moomoo)','n']];
 function vSettings(){const s=state.settings;return`<div class="card"><h2>Signal & risk settings</h2><div class="form">${FIELDS.map(f=>`<div><label>${f[1]}</label><input type="number" step="any" data-a="set" data-k="${f[0]}" value="${s[f[0]]}"></div>`).join('')}
- <div><label>Chart provider</label><select data-a="setc"><option value="moomoo" ${s.chart!=='yahoo'?'selected':''}>Moomoo (exact option contract page)</option><option value="yahoo" ${s.chart==='yahoo'?'selected':''}>Yahoo Finance (exact option contract page)</option></select></div>
+ <div><label>Chart provider</label><select data-a="setc"><option value="moomoo" ${s.chart==='moomoo'?'selected':''}>Moomoo (exact option contract page)</option><option value="tv" ${s.chart==='tv'?'selected':''}>TradingView (underlying chart only)</option><option value="yahoo" ${s.chart==='yahoo'?'selected':''}>Yahoo Finance (exact option contract page)</option></select></div>
  <div><label>Auto-close paper trades at Stop 2 / Target 2</label><select data-a="setac"><option value="0" ${!s.autoClose?'selected':''}>Off (alerts only)</option><option value="1" ${s.autoClose?'selected':''}>On</option></select></div></div>
  <p class="mu">Stops/targets: underlying levels are ATR multiples from entry; option levels are projected with delta + gamma. Settings apply on the next refresh.</p><div class="btns"><button data-a="sreset">Restore defaults</button></div></div>`}
 function connChip(id){const c=state.conn[id];return`<span class="tag ${/^Connected/.test(c)?'g':/Failed/.test(c)?'r':'y'}">${esc(c)}</span>`}
@@ -288,6 +303,8 @@ function vData(){const c=state.creds,s=state.settings;return`<div class="banner 
  <p class="mu">Not yet connected here: Tradier, Twelve Data, Alpha Vantage, Finnhub, news/earnings feeds — add a provider object with <code>bars()</code>/<code>chain()</code>/<code>ping()</code> next to <code>Polygon</code> in the code. Nothing is ever invented when a provider fails.</p></div>`}
 function vDetail(p){const a=p.an,W=600,H=170,mn=Math.min(...a.spark,p.u.sl2),mx=Math.max(...a.spark,p.u.t2),y=v=>H-8-(v-mn)/(mx-mn)*(H-16),x=i=>i/(a.spark.length-1)*W;
  const ln=(v,c,t)=>`<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 3"/><text x="4" y="${y(v)-2}" fill="${c}" font-size="10">${t} ${nf(v)}</text>`;
+ const rpc=(p.o.entry-p.o.sl1)*100,defQ=Math.max(1,Math.min(Math.floor(state.settings.maxRisk/Math.max(rpc,1)),Math.floor(state.settings.maxCap/(p.mid*100))));
+ const curQ=p.customQty||defQ;
  return`<div class="card"><div class="btns" style="justify-content:space-between"><h2>${p.sym} ${p.dir>0?'CALL':'PUT'} $${p.strike} ${p.exp}</h2><button data-a="close-modal">✕ Close</button></div>
  <svg viewBox="0 0 ${W} ${H}" style="width:100%;background:var(--bg);border-radius:6px"><polyline fill="none" stroke="#5aa9ff" stroke-width="1.6" points="${a.spark.map((v,i)=>x(i)+','+y(v)).join(' ')}"/>${ln(a.vwap,'#f2b84b','VWAP')}${ln(p.u.t1,'#2ecc8f','T1')}${ln(p.u.sl1,'#ff5c6c','SL1')}</svg>
  <h3>Technical confluence score: ${p.score}/100 — ${p.lbl}</h3><div class="sc"><table><tr><th>Component</th><th>Points</th><th>Max</th></tr>${[['trend',20],['momentum',15],['vwap',15],['volume',10],['priceAction',10],['marketRegime',10],['liquidity',10],['iv',5],['riskReward',5]].map(([k,m])=>`<tr><td>${k}</td><td>${nf(p.k[k],1)}</td><td>${m}</td></tr>`).join('')}</table></div><p class="mu">Rule-based technical/options confluence — NOT a guaranteed probability of profit. Correlated indicators are grouped into one component to avoid double-counting.</p>
@@ -295,7 +312,9 @@ function vDetail(p){const a=p.an,W=600,H=170,mn=Math.min(...a.spark,p.u.sl2),mx=
  <h3>Trade plan</h3><div class="sc"><table><tr><th></th><th>Entry</th><th>SL1</th><th>SL2</th><th>T1</th><th>T2</th></tr><tr><td>Underlying</td>${['entry','sl1','sl2','t1','t2'].map(k=>`<td>${$$(p.u[k])}</td>`).join('')}</tr><tr><td>Option premium</td>${['entry','sl1','sl2','t1','t2'].map(k=>`<td>${$$(p.o[k])}</td>`).join('')}</tr></table></div>
  <p class="mu">Method: underlying SL/targets = entry ∓/± ATR(14, 5m = ${nf(p.an.atr)}) × ${state.settings.sl1}/${state.settings.sl2}/${state.settings.t1}/${state.settings.t2}; option levels = mid + delta·Δ + ½·gamma·Δ². Risk/reward: T1 ${nf(p.rr1)}, T2 ${nf(p.rr2)}.</p>
  <h3>Why this trade?</h3><div class="why">${p.why.map(x=>`<div class="${x[0]==='✓'?'g':'y'}">${esc(x)}</div>`).join('')}</div><h3>Risks</h3><div class="why">${p.risks.map(x=>`<div class="y">${esc(x)}</div>`).join('')}</div>${mtfHTML(p.sym)}
- <div class="btns"><button data-a="chart" data-id="${p.id}">📈 OPEN CHART</button><button class="ok" data-a="add" data-id="${p.id}">ADD TO PAPER</button><button class="dn" data-a="rej" data-id="${p.id}">REJECT</button></div></div>`}
+ <div class="btns"><button data-a="chart" data-id="${p.id}">📈 OPEN CHART</button>
+ <div style="display:inline-flex;align-items:center;gap:4px;background:var(--p2);border:1px solid var(--bd);border-radius:5px;padding:0 6px"><label style="margin:0;font-size:11px;color:var(--mu)">Qty</label><input type="number" min="1" max="500" value="${curQ}" data-a="set-pick-qty" data-id="${p.id}" style="width:48px;padding:4px 2px;border:none;background:transparent;text-align:center;font-weight:700" title="Contracts to buy"></div>
+ <button class="ok" data-a="add" data-id="${p.id}">ADD TO PAPER</button><button class="dn" data-a="rej" data-id="${p.id}">REJECT</button></div></div>`}
 const V={overview:vOverview,picks:vPicks,chain:vChain,tech:vTech,paper:vPaper,journal:vJournal,watch:vWatch,settings:vSettings,data:vData};
 function render(){header();$('#main').innerHTML=banners()+V[state.tab]()}
 function refresh(){if(['settings','data','watch'].includes(state.tab)&&!state.forceRender){header();return}render()}
@@ -323,7 +342,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  case'close-modal':$('#modal').style.display='none';break;
  case'add':{addPaper(id);$('#modal').style.display='none';break}
  case'rej':state.picks=state.picks.filter(p=>p.id!==id);$('#modal').style.display='none';render();break;
- case'qty':{const t=state.trades.find(x=>x.id===id);if(t){t.qty++;save();render()}break}
+ case'edit-qty':
+ case'qty':{const t=state.trades.find(x=>x.id===id);if(t){const v=prompt(`Edit contract quantity for ${t.sym} ${t.dir>0?'CALL':'PUT'} $${t.strike} (Exp: ${t.exp}):`,t.qty);if(v!==null){const n=parseInt(v.trim(),10);if(!isNaN(n)&&n>0){t.qty=n;save();render();toast(`Updated ${t.sym} quantity to ${n}`)}else{toast('Invalid quantity: must be 1 or greater')}}}break}
  case'close':{const t=state.trades.find(x=>x.id===id);closeTrade(id,t&&t.cur!=null&&t.sim===curSim()?t.cur:null);break}
  case'del':if(confirm('Delete this paper trade? It will not count in P&L.')){state.trades=state.trades.filter(t=>t.id!==id);save();render()}break;
  case'csv':exportData('csv');break;case'json':exportData('json');break;
@@ -331,8 +351,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  case'wdel':state.watch=state.watch.filter(s=>s!==v);save();state.forceRender=1;render();state.forceRender=0;break;
  case'wreset':state.watch=['NVDA','AAPL','MSFT','AMZN','META','GOOGL','TSLA','AMD','AVGO','NFLX','JPM','BAC','AMAT','MU','QCOM','PLTR','SPY','QQQ','IWM','DIA'];save();state.forceRender=1;render();state.forceRender=0;break;
  case'sreset':state.settings={...DEF};save();state.forceRender=1;render();state.forceRender=0;setTimer();break}});
+document.addEventListener('input',e=>{const t=e.target,a=t.dataset.a;if(!a)return;
+ if(a==='set-pick-qty'){const p=state.picks.find(x=>x.id===t.dataset.id);if(p){const n=parseInt(t.value,10);if(n>0)p.customQty=n}}});
 document.addEventListener('change',e=>{const t=e.target,a=t.dataset.a;if(!a)return;
  if(a==='set'){const n=parseFloat(t.value);if(!isNaN(n)){state.settings[t.dataset.k]=n;save()}}
+ else if(a==='set-pick-qty'){const p=state.picks.find(x=>x.id===t.dataset.id);if(p){const n=parseInt(t.value,10);if(n>0)p.customQty=n}}
  else if(a==='setc'){state.settings.chart=t.value;save()}else if(a==='setac'){state.settings.autoClose=t.value==='1';save()}
  else if(a==='prim'){state.settings.primary=t.value;save();state.forceRender=1;render();state.forceRender=0}
  else if(a==='rf'){state.settings.refresh=+t.value;save();setTimer()}
