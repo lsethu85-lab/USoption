@@ -61,13 +61,15 @@ function mkt(){const p=et(),m=p.min,wd=['Sat','Sun'].indexOf(p.weekday)<0;let s=
  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];let nx;if(wd&&m<570)nx='Today 09:30 ET';else{let i=days.indexOf(p.weekday)+1;nx=days[i%7];if(nx==='Sat')nx='Mon';if(nx==='Sun')nx='Mon';nx+=' 09:30 ET'}
  return{s,open,nx,p}}
 /* ============ CONFIG / STATE ============ */
-const DEF={minScore:65,minVol:100,minOI:500,maxSpread:8,minUVol:0,dMin:.35,dMax:.65,minDTE:0,maxDTE:45,minRR1:1.5,minRR2:2,sl1:1,sl2:1.5,t1:1.5,t2:2.5,maxIVHV:2.5,maxCap:10000,maxRisk:500,maxOpen:5,feePerContract:0.65,autoClose:false,refresh:30,chart:'tv',primary:'polygon'};
+const DEF={minScore:65,minVol:100,minOI:500,maxSpread:8,minUVol:0,dMin:.35,dMax:.65,minDTE:0,maxDTE:45,minRR1:1.5,minRR2:2,sl1:1,sl2:1.5,t1:1.5,t2:2.5,maxIVHV:2.5,maxCap:10000,maxRisk:500,maxOpen:5,feePerContract:0.65,autoClose:false,refresh:30,chart:'moomoo',primary:'polygon'};
 const state={tab:'overview',mode:'none',settings:{...DEF,...LS.get('opt_settings',{})},
  watch:LS.get('opt_watch',['NVDA','AAPL','MSFT','AMZN','META','GOOGL','TSLA','AMD','AVGO','NFLX','JPM','BAC','AMAT','MU','QCOM','PLTR','SPY','QQQ','IWM','DIA']),
  trades:LS.get('opt_trades',[]),view:'live',
  creds:{polygon:{key:'',on:false},proxy:{url:'',key:'',secret:'',label:'Moomoo (via your proxy)',on:false}},
  conn:{polygon:'Not configured',proxy:'Not configured',demo:'Off'},
  status:'OFFLINE',src:'—',last:null,lat:null,fail:[],busy:false,picks:[],rejects:[],regime:null,an:{},chains:{},counts:{},chainSel:null,timer:null};
+// Auto-migrate old TV settings to Moomoo
+if(state.settings.chart==='tv'&&!LS.get('chart_migrated')){state.settings.chart='moomoo';LS.set('chart_migrated',true);}
 const save=()=>{LS.set('opt_settings',state.settings);LS.set('opt_watch',state.watch);LS.set('opt_trades',state.trades)};
 const NOOPT=['VIX','SPX','NDX'], CTX=['SPY','QQQ','IWM','DIA','VIX'];
 /* ============ NORMALIZATION ============ */
@@ -98,7 +100,12 @@ const Proxy={id:'proxy',get name(){return state.creds.proxy.label},real:true,get
  req(path){const c=state.creds.proxy;if(!/^https:\/\//.test(c.url)&&!/^http:\/\/(localhost|127\.0\.0\.1)/.test(c.url))throw err('endpoint must be https:// (or localhost)','BAD');
   const h={};if(c.key)h['X-API-Key']=c.key;if(c.secret)h['X-API-Secret']=c.secret;return fj(c.url.replace(/\/$/,'')+path,{headers:h})},
  async bars(s){const j=await this.req('/bars?symbol='+s+'&tf=5');if(!Array.isArray(j)||!j.length)throw err('invalid bars response','BAD');return j},
- async chain(s){const j=await this.req('/chain?symbol='+s);if(!Array.isArray(j)||!j.length)throw err('OPTIONS DATA UNAVAILABLE','BAD');return j},
+ async chain(s){
+  const openStr = state.trades.filter(t=>t.status==='OPEN'&&t.sym===s).map(t=>t.strike).join(',');
+  const q = openStr ? '&strikes=' + openStr : '';
+  const j=await this.req('/chain?symbol='+s+q);
+  if(!Array.isArray(j)||!j.length)throw err('OPTIONS DATA UNAVAILABLE','BAD');return j;
+ },
  async ping(){await this.bars('SPY')}};
 const BASE={SPY:560,QQQ:490,IWM:215,DIA:420,VIX:17,NVDA:180,AAPL:225,MSFT:430,AMZN:195,META:580,GOOGL:170,TSLA:250,AMD:150,AVGO:170,NFLX:700,JPM:220,BAC:42,AMAT:190,MU:110,QCOM:165,PLTR:40};
 const Demo={id:'demo',name:'DEMO / SIMULATED',real:false,get ok(){return state.mode==='demo'},
@@ -190,7 +197,13 @@ async function scan(){if(state.busy||state.mode==='none')return;const ps=provs()
 /* ============ PAPER TRADING / P&L ============ */
 const curSim=()=>state.mode==='demo';
 function updateTrades(){state.trades.forEach(t=>{if(t.status!=='OPEN'||t.sim!==curSim()||state.status==='OFFLINE')return;const c=state.chains[t.sym];if(!c)return;
- const r=c.rows.find(x=>x.exp===t.exp&&x.type===t.type&&Number(x.strike)===Number(t.strike));if(r&&r.bid>0&&r.ask>0){t.cur=(r.bid+r.ask)/2;t.curTime=Date.now()}
+ const r=c.rows.find(x=>x.exp===t.exp&&x.type===t.type&&Number(x.strike)===Number(t.strike));
+ if(r){
+  const b = Number(r.bid)||0, a = Number(r.ask)||0, l = Number(r.last)||0;
+  const mid = (b > 0 && a > 0) ? (b + a) / 2 : 0;
+  const current = l > 0 ? l : mid > 0 ? mid : t.cur;
+  if(current > 0 && current !== t.cur){t.cur = current; t.curTime = Date.now();}
+ }
  if(state.settings.autoClose&&t.cur!=null&&/STOP 2|TARGET 2/.test(tStatus(t)))closeTrade(t.id,t.cur,true)});save()}
 function tStatus(t){if(t.status==='CLOSED')return'CLOSED';if(t.cur==null)return'NO PRICE';const c=t.cur;return c<=t.sl2?'STOP 2 HIT':c<=t.sl1?'STOP 1 HIT':c>=t.t2?'TARGET 2 HIT':c>=t.t1?'TARGET 1 HIT':'WAITING'}
 const tpl=t=>{
@@ -213,10 +226,12 @@ function stats(sim){const all=state.trades.filter(t=>t.sim===sim),cl=all.filter(
  const per=ms=>cl.filter(t=>t.exitTime>=Date.now()-ms).reduce((a,t)=>a+t.pnl,0),td=cl.filter(t=>et(new Date(t.exitTime)).date===et().date).reduce((a,t)=>a+t.pnl,0);
  return{n:all.length,cl:cl.length,w:w.length,l:l.length,wr:cl.length?w.length/cl.length*100:null,re,un,tot:re+un,gp,gl,aw:w.length?gp/w.length:null,al:l.length?gl/l.length:null,mw:w.length?Math.max(...w.map(t=>t.pnl)):null,ml:l.length?Math.min(...l.map(t=>t.pnl)):null,pf:gl?gp/-gl:null,avg:cl.length?re/cl.length:null,hold:cl.length?avg(cl.map(t=>t.exitTime-t.entryTime))/6e4:null,td:td+un*0,wk:per(7*864e5),mo:per(30*864e5)}}
 /* ============ CHART LINKS ============ */
-function chartLink(p){const prov=state.settings.chart;if(prov==='yahoo')return{url:'https://finance.yahoo.com/quote/'+p.occ,direct:true};
- if(prov==='moomoo')return{url:'https://www.moomoo.com/stock/'+encodeURIComponent(p.sym)+'-US/options-chain',direct:false};
+function chartLink(p){const prov=state.settings.chart;
+ if(prov==='yahoo')return{url:'https://finance.yahoo.com/quote/'+p.occ,direct:true};
+ if(prov==='moomoo')return{url:'https://www.moomoo.com/stock/'+encodeURIComponent(p.sym)+'-US/options',direct:false};
  return{url:'https://www.tradingview.com/chart/?symbol='+encodeURIComponent(p.sym),direct:false}}
-function openChart(sym,dir,exp,strike,type){const o={sym,occ:occ(sym,exp,type,strike)},c=chartLink(o);if(!c.direct)toast('Direct option chart unavailable — opening underlying chart/chain.');window.open(c.url,'_blank','noopener')}
+function openChart(sym,dir,exp,strike,type){const o={sym,occ:occ(sym,exp,type,strike)},c=chartLink(o);
+ if(!c.direct)toast('Direct option chart unavailable — opening underlying chain.');window.open(c.url,'_blank','noopener')}
 /* ============ UI ============ */
 const TABS=[['overview','OVERVIEW'],['picks','AUTO-PICKS'],['chain','OPTIONS CHAIN'],['tech','TECHNICAL ANALYSIS'],['paper','PAPER TRADING'],['journal','TRADE JOURNAL'],['watch','WATCHLIST'],['settings','SETTINGS'],['data','DATA SOURCES']];
 const ST={LIVE:['🟢','LIVE','g'],DELAYED:['🟡','DELAYED','y'],SIM:['🔵','SIMULATED (DEMO)','bl'],OFFLINE:['🔴','OFFLINE','r'],CLOSEDDATA:['🟡','LAST SESSION DATA (market closed)','y']};
@@ -273,7 +288,7 @@ function vJournal(){const C=state.trades.filter(t=>t.status==='CLOSED').sort((a,
 function vWatch(){return`<div class="card"><div class="btns"><input id="wsym" placeholder="Add ticker e.g. NVDA" maxlength="6" style="max-width:200px"><button class="pri" data-a="wadd">Add</button><button data-a="wreset">Reset list</button></div><p class="mu">Context symbols (SPY, QQQ, IWM, DIA, VIX) are always analysed. SPX/NDX/VIX have no directly tradeable options here — use SPY/QQQ as proxies.</p><div>${state.watch.map(s=>`<span class="tag">${s} <a href="#" data-a="wdel" data-v="${s}" style="color:var(--r);text-decoration:none">✕</a></span>`).join(' ')}</div></div>`}
 const FIELDS=[['minScore','Minimum score','n'],['minVol','Min option volume','n'],['minOI','Min open interest','n'],['maxSpread','Max bid/ask spread %','n'],['minUVol','Min underlying volume','n'],['dMin','Min |delta|','n'],['dMax','Max |delta|','n'],['minDTE','Min DTE','n'],['maxDTE','Max DTE','n'],['minRR1','Min R:R to T1','n'],['minRR2','Min R:R to T2','n'],['sl1','SL1 (× ATR)','n'],['sl2','SL2 (× ATR)','n'],['t1','Target 1 (× ATR)','n'],['t2','Target 2 (× ATR)','n'],['maxIVHV','Max IV / realized-vol ratio','n'],['maxCap','Max paper capital $','n'],['maxRisk','Max risk per trade $','n'],['maxOpen','Max simultaneous trades','n'],['feePerContract','Commission fee per contract$ (e.g. Moomoo)','n']];
 function vSettings(){const s=state.settings;return`<div class="card"><h2>Signal & risk settings</h2><div class="form">${FIELDS.map(f=>`<div><label>${f[1]}</label><input type="number" step="any" data-a="set" data-k="${f[0]}" value="${s[f[0]]}"></div>`).join('')}
- <div><label>Chart provider</label><select data-a="setc"><option value="tv" ${s.chart==='tv'?'selected':''}>TradingView (underlying chart only)</option><option value="yahoo" ${s.chart==='yahoo'?'selected':''}>Yahoo Finance (exact option contract page)</option><option value="moomoo" ${s.chart==='moomoo'?'selected':''}>Moomoo (Options Chain)</option></select></div>
+ <div><label>Chart provider</label><select data-a="setc"><option value="tv" ${s.chart==='tv'?'selected':''}>TradingView (underlying chart only)</option><option value="yahoo" ${s.chart==='yahoo'?'selected':''}>Yahoo Finance (exact option contract page)</option><option value="moomoo" ${s.chart==='moomoo'?'selected':''}>Moomoo (Options Chain / Weekly & Monthly)</option></select></div>
  <div><label>Auto-close paper trades at Stop 2 / Target 2</label><select data-a="setac"><option value="0" ${!s.autoClose?'selected':''}>Off (alerts only)</option><option value="1" ${s.autoClose?'selected':''}>On</option></select></div></div>
  <p class="mu">Stops/targets: underlying levels are ATR multiples from entry; option levels are projected with delta + gamma. Settings apply on the next refresh.</p><div class="btns"><button data-a="sreset">Restore defaults</button></div></div>`}
 function connChip(id){const c=state.conn[id];return`<span class="tag ${/^Connected/.test(c)?'g':/Failed/.test(c)?'r':'y'}">${esc(c)}</span>`}
