@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AlphaPulse | Pro Options Terminal</title>
+<style>
+:root {
+  --bg: #0b0f17;
+  --surface: #111723;
+  --surface-raised: #182234;
+  --border: #223048;
+  --border-focus: #3b82f6;
+  --tx-main: #f1f5f9;
+  --tx-muted: #8494ab;
+  --tx-faint: #4c5d77;
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.12);
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.12);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59, 130, 246, 0.14);
+  --amber: #f59e0b;
+  --amber-bg: rgba(245, 158, 11, 0.14);
+  --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-raised: #f8fafc;
+    --border: #dbe2ea;
+    --border-focus: #2563eb;
+    --tx-main: #0f172a;
+    --tx-muted: #64748b;
+    --tx-faint: #94a3b8;
+    --green: #059669;
+    --green-bg: #ecfdf5;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--tx-main);
+  font: 13px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+.brand-badge {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+nav { display: flex; gap: 6px; }
+.btn {
+  background: var(--surface-raised);
+  color: var(--tx-main);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 12px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { background: var(--border); }
+.btn.on, .btn.pri {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.btn.sm { padding: 3px 8px; font-size: 11px; }
+.btn.danger { color: var(--red); border-color: rgba(239,68,68,0.3); }
+.btn.danger:hover { background: var(--red-bg); }
+.status-pill {
+  font-size: 11px;
+  color: var(--tx-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+.dot.online {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+.connection-group { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end; }
+.moomoo-pill { padding:5px 8px; border:1px solid var(--border); border-radius:999px; background:var(--surface-raised); }
+.dot.checking { background:var(--amber); box-shadow:0 0 8px var(--amber); animation:mmPulse 1.2s ease-in-out infinite; }
+.dot.warning { background:var(--amber); box-shadow:0 0 8px var(--amber); }
+.dot.offline { background:var(--red); box-shadow:0 0 8px var(--red); }
+@keyframes mmPulse { 50% { opacity:.35; } }
+@media (max-width:760px) { .connection-group { width:100%; justify-content:flex-start; } }
+.alert-stack { position:fixed; top:72px; right:18px; z-index:9999; display:grid; gap:8px; width:min(380px,calc(100vw - 36px)); pointer-events:none; }
+.disconnect-alert { pointer-events:auto; display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border:1px solid rgba(239,68,68,.45); border-left:4px solid var(--red); border-radius:8px; background:var(--surface); box-shadow:0 12px 34px rgba(0,0,0,.28); color:var(--tx-main); }
+.disconnect-alert.reconnected { border-color:rgba(16,185,129,.45); border-left-color:var(--green); }
+.disconnect-alert .alert-title { font-weight:800; font-size:12px; }
+.disconnect-alert .alert-text { color:var(--tx-muted); font-size:11px; margin-top:3px; line-height:1.4; }
+.disconnect-alert .alert-close { margin-left:auto; border:0; background:transparent; color:var(--tx-muted); cursor:pointer; font-size:16px; line-height:1; }
+@media (max-width:600px) { .alert-stack { top:118px; right:10px; width:calc(100vw - 20px); } }
+main {
+  padding: 18px 20px;
+  max-width: 1400px;
+  margin: auto;
+}
+.kpi-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.kpi-label { font-size: 11px; color: var(--tx-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-val { font-size: 20px; font-weight: 700; font-family: var(--mono); margin-top: 4px; }
+.wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+th {
+  background: var(--surface-raised);
+  color: var(--tx-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+th:first-child, td:first-child { text-align: left; }
+.tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+.tag.Strict { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+.tag.Balanced { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+.trade-datetime { min-width:138px; line-height:1.4; }
+.trade-datetime .date { color:var(--tx-main); font:11px var(--mono); }
+.trade-datetime .time { color:var(--tx-muted); font:10px var(--mono); }
+.paper-filter { background:var(--surface-raised); color:var(--tx-main); border:1px solid var(--border); border-radius:5px; padding:6px 8px; font:11px var(--sans); }
+.paper-filter:focus { outline:none; border-color:var(--border-focus); }
+.paper-filter-label { color:var(--tx-muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.35px; }
+
+.tag.Aggressive { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+.sym-name { font-weight: 700; color: var(--tx-main); }
+.sym-sub { font-size: 11px; color: var(--tx-muted); }
+.g { color: var(--green); }
+.r { color: var(--red); }
+.mu { color: var(--tx-muted); }
+.mono { font-family: var(--mono); }
+input {
+  background: var(--surface-raised);
+  color: var(--tx-main);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  width: 82px;
+  text-align: right;
+}
+input:focus { border-color: var(--border-focus); outline: none; }
+.set { background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+.set label { display: block; margin: 14px 0 4px; color: var(--tx-muted); font-size: 12px; font-weight: 600; }
+.set input { width: 100%; max-width: 500px; text-align: left; padding: 7px 10px; }
+.row { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; align-items: center; }
+.actions-cell { display: flex; gap: 4px; justify-content: flex-end; }
+.live-meta { font-size:10px; color:var(--tx-muted); margin-top:2px; }
+.auto-badge { color:var(--green); font-size:11px; font-weight:600; }
+.btn.warn { color:var(--amber); border-color:rgba(245,158,11,.35); }
+.target-progress { min-width:150px; }
+.progress-track { height:8px; background:var(--surface-raised); border:1px solid var(--border); border-radius:999px; overflow:hidden; margin:5px 0 4px; }
+.progress-fill { height:100%; border-radius:999px; transition:width .2s ease; }
+.progress-fill.target-loss { background:var(--red); }
+.progress-fill.target-low { background:var(--amber); }
+.progress-fill.target-mid { background:var(--blue); }
+.progress-fill.target-high, .progress-fill.reached { background:var(--green); }
+.progress-fill.stop-safe { background:var(--green); }
+.progress-fill.stop-warn { background:var(--amber); }
+.progress-fill.stop-danger, .progress-fill.stop-hit { background:var(--red); }
+.progress-label { display:inline-flex; align-items:center; gap:5px; }
+.progress-dot { width:7px; height:7px; border-radius:50%; display:inline-block; background:currentColor; }
+
+.progress-meta { display:flex; justify-content:space-between; gap:8px; font:10px var(--mono); color:var(--tx-muted); }
+.close-why { min-width:220px; line-height:1.45; }
+.close-why .reason { color:var(--tx-main); font-weight:700; }
+.close-why .evidence { color:var(--tx-muted); font-size:10px; margin-top:3px; }
+
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span>AlphaPulse</span>
+    <span class="brand-badge">PRO TERMINAL</span>
+  </div>
+  <nav>
+    <button class="btn on" id="btn-picks" onclick="setTab('picks')">⚡ Auto-Picks</button>
+    <button class="btn" id="btn-paper" onclick="setTab('paper')">💼 Paper Trading</button>
+    <button class="btn" id="btn-set" onclick="setTab('set')">⚙️ Settings</button>
+  </nav>
+  <div class="connection-group">
+    <div class="status-pill">
+      <span class="dot" id="dot"></span>
+      <span id="bs">BRIDGE OFFLINE</span>
+    </div>
+    <div class="status-pill moomoo-pill" id="mm-pill" title="Checking Moomoo OpenD connection">
+      <span class="dot checking" id="mm-dot"></span>
+      <span id="mm-status">MOOMOO CHECKING</span>
+    </div>
+  </div>
+</header>
+<div class="alert-stack" id="alert-stack" aria-live="assertive" aria-atomic="true"></div>
+
+<main id="v"></main>
+
+<main class="mu" style="padding-top:0; font-size:11px;">
+  Market data delayed by ~15m when routing via Yahoo fallback. Auto-sync occurs every 15s. Realized P&amp;L records net of commissions and OCC/ORF clearing fees.
+</main>
+
+<script type="text/plain" id="bridge">
+const http = require('http'), PORT = process.env.PORT || 8787, UA = { 'User-Agent': 'Mozilla/5.0' };
+let cookie = '', crumb = '';
+let moomoo = { key: process.env.MOOMOO_KEY || '', secret: process.env.MOOMOO_SECRET || '', host: '127.0.0.1', port: 33333 };
+
+async function auth() {
+  const r = await fetch('https://fc.yahoo.com', { headers: UA, redirect: 'manual' });
+  cookie = (r.headers.getSetCookie?.() || []).map(c => c.split(';')[0]).join('; ');
+  crumb = await (await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', { headers: { ...UA, cookie } })).text();
+}
+async function yf(path) {
+  for (let i = 0; i < 2; i++) {
+    if (!crumb) await auth();
+    const r = await fetch('https://query2.finance.yahoo.com' + path + (path.includes('?') ? '&' : '?') + 'crumb=' + encodeURIComponent(crumb), { headers: { ...UA, cookie } });
+    if (r.ok) return r.json();
+    crumb = '';
+  }
+  throw new Error('Yahoo request failed');
+}
+
+let mm = null, mmReady = false, mmErr = '', subd = new Set(), mmTimer = null;
+// Minimal protobuf reader for InitWebSocket.Response (retType=1, retMsg=2, errCode=3).
+function pbInit(ab) {
+  const u = new Uint8Array(ab), o = {}; let i = 0;
+  const vi = () => { let r = 0n, s = 0n, b; do { b = u[i++]; r |= BigInt(b & 127) << s; s += 7n; } while (b & 128); return r; };
+  while (i < u.length) {
+    const t = Number(vi()), f = t >> 3, w = t & 7;
+    if (w === 0) { const v = vi(); if (f === 1) o.retType = Number(BigInt.asIntN(32, v)); if (f === 3) o.errCode = Number(BigInt.asIntN(32, v)); }
+    else if (w === 2) { const n = Number(vi()); if (f === 2) o.retMsg = Buffer.from(u.subarray(i, i + n)).toString('utf8'); i += n; }
+    else if (w === 1) i += 8; else if (w === 5) i += 4; else break;
+  }
+  return o;
+}
+function mmClose() {
+  clearTimeout(mmTimer);
+  try { if (mm && typeof mm.stop === 'function') mm.stop(); } catch (e) {}
+  mm = null; mmReady = false;
+}
+function mmConnect() {
+  mmClose();
+  let M;
+  try { M = require('moomoo-api'); }
+  catch (e) { mmErr = 'moomoo-api not installed. Run: npm i moomoo-api (in the same folder as server.js)'; return; }
+  try {
+    const C = M.default || M, me = new C();
+    let refusal = null;
+    mm = me; subd.clear(); mmErr = 'connecting';
+    me.onlogin = (ret, msg) => {
+      if (mm !== me) return;
+      clearTimeout(mmTimer);
+      mmReady = !!ret;
+      if (ret) mmErr = '';
+      else if (refusal) mmErr = 'OpenD refused the connection: ' + (refusal.retMsg || 'no message') + ' (code ' + refusal.retType + (refusal.errCode ? '/' + refusal.errCode : '') + '). Check the WebSocket key matches OpenD.';
+      else mmErr = 'OpenD login failed: ' + (msg || 'check WebSocket key (plain text, not the MD5) and port');
+      console.log('[moomoo] login', ret ? 'OK' : 'FAILED', refusal ? JSON.stringify(refusal) : (msg && msg.message || msg || ''));
+    };
+    me.start(moomoo.host, +moomoo.port, false, moomoo.key);
+    // The SDK throws away OpenD's error reply to the init request; read it ourselves so the real reason is shown.
+    const wb = me.websock;
+    if (wb && typeof wb.sendBuff === 'function') {
+      const orig = wb.sendBuff.bind(wb);
+      wb.sendBuff = (cmd, buf, t) => {
+        const p = orig(cmd, buf, t);
+        return cmd !== 1 ? p : p.then(r => { try { if (r && r.buff) { const d = pbInit(r.buff); if (d.retType !== undefined && d.retType !== 0) refusal = d; } } catch (e) {} return r; });
+      };
+    }
+    mmTimer = setTimeout(() => {
+      if (mm === me && !mmReady && mmErr === 'connecting')
+        mmErr = 'No login response from OpenD at ' + moomoo.host + ':' + moomoo.port + ' after 8s. Check OpenD is running, its WebSocket port is enabled, and the key matches.';
+    }, 8000);
+  } catch (e) { mm = null; mmErr = e.message; }
+}
+// A refused/dropped OpenD socket can throw asynchronously inside the SDK; keep the bridge alive and report it.
+process.on('uncaughtException', e => { console.error('[bridge]', e.message); if (mm && !mmReady) mmErr = 'OpenD connection error: ' + e.message; });
+process.on('unhandledRejection', e => { console.error('[bridge]', e && e.message || e); if (mm && !mmReady) mmErr = 'OpenD connection error: ' + (e && e.message || e); });
+const mmQuoteCache = new Map();
+function moomooSecurity(code) {
+  const raw = String(code || '').trim().toUpperCase().replace(/-US$/, '');
+  const m = /^([A-Z.]+)(\d{6}[CP])(\d{8})$/.exec(raw);
+  if (!m) return null;
+  // OpenD option codes use the OCC root/date/type plus strike in thousandths without leading zeroes.
+  return { market: 11, code: m[1] + m[2] + String(Number(m[3])) };
+}
+function basicQuoteFromResponse(resp) {
+  const body = resp && (resp.s2c || resp);
+  const list = body && (body.basicQotList || body.basicQot || body.quoteList);
+  const q = Array.isArray(list) ? list[0] : null;
+  const n = q && Number(q.curPrice != null ? q.curPrice : q.lastPrice);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+async function moomooQuote(code) {
+  const sec = moomooSecurity(code);
+  if (!sec || !mm || !mmReady) return null;
+  try {
+    if (!subd.has(sec.code)) {
+      const sr = await mm.Sub({ c2s: { securityList: [sec], subTypeList: [1], isSubOrUnSub: true, isRegOrUnRegPush: true } });
+      if (sr && sr.retType != null && Number(sr.retType) !== 0) throw new Error(sr.retMsg || 'Moomoo subscription failed');
+      subd.add(sec.code);
+    }
+    const resp = await mm.GetBasicQot({ c2s: { securityList: [sec] } });
+    const last = basicQuoteFromResponse(resp);
+    if (!last) throw new Error('Moomoo returned no valid price for ' + sec.code);
+    const quote = { last, ts: Date.now(), code: sec.code };
+    mmQuoteCache.set(String(code).toUpperCase(), quote);
+    mmErr = '';
+    return quote;
+  } catch (e) {
+    mmErr = e && e.message ? e.message : String(e);
+    const cached = mmQuoteCache.get(String(code).toUpperCase());
+    return cached && Date.now() - cached.ts < 30000 ? { ...cached, cached: true } : null;
+  }
+}
+if (moomoo.key) mmConnect();
+
+const E = encodeURIComponent;
+const routes = {
+  '/api/chain': q => yf(`/v7/finance/options/${E(q.symbol)}` + (q.date ? `?date=${q.date}` : '')),
+  '/api/quote': q => yf(`/v7/finance/quote?symbols=${E(q.symbols)}`),
+  '/api/chart': q => yf(`/v8/finance/chart/${E(q.symbol)}?range=${q.range || '6mo'}&interval=${q.interval || '1d'}`),
+  '/api/moomoo/quote': async q => ({ quote: await moomooQuote(q.code) }),
+  '/api/moomoo/status': async () => ({ configured: !!moomoo.key, connected: mmReady, error: mmErr, host: moomoo.host, port: moomoo.port }),
+};
+
+http.createServer(async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  if (req.method === 'OPTIONS') return res.end();
+  const u = new URL(req.url, 'http://x'), q = Object.fromEntries(u.searchParams);
+  const send = (c, o) => { res.writeHead(c, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
+  try {
+    if (req.method === 'POST' && u.pathname === '/api/moomoo/config') {
+      let b = ''; for await (const c of req) b += c;
+      const c = JSON.parse(b);
+      for (const k of ['key', 'secret', 'host', 'port']) if (c[k] !== undefined && c[k] !== '' && c[k] !== null) moomoo[k] = c[k];
+      mmConnect();
+      return send(200, { ok: true });
+    }
+    const h = routes[u.pathname];
+    if (!h) return send(404, { error: 'not found' });
+    send(200, await h(q));
+  } catch (e) { send(500, { error: e.message }); }
+}).listen(PORT, '127.0.0.1', () => console.log('Bridge on http://127.0.0.1:' + PORT));
+</script>
+
+<script>
+const $ = s => document.querySelector(s);
+let cfg = {
+  bridge: 'http://localhost:8787',
+  uni: 'SPY,QQQ,IWM,AAPL,MSFT,NVDA,TSLA,AMZN,META',
+  fee: 0.69,
+  autoCloseTarget: true,
+  pos: [],
+  closed: []
+};
+
+try {
+  const stored = JSON.parse(localStorage.getItem('opt') || '{}');
+  cfg = Object.assign(cfg, stored);
+  if (!Array.isArray(cfg.pos)) cfg.pos = [];
+  if (!Array.isArray(cfg.closed)) cfg.closed = [];
+} catch(e) {}
+
+const save = () => { try { localStorage.setItem('opt', JSON.stringify(cfg)); } catch(e){} };
+
+const api = async (p) => {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
+  try {
+    const r = await fetch(cfg.bridge + p, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+};
+
+let tab = 'picks', mode = 'intraday', tier = 'All', picks = [], msg = '', busy = false, refreshing = false;
+let openTierFilter = 'All', openSort = 'newest', closedTierFilter = 'All', closedSort = 'newest';
+
+function setTab(t) {
+  tab = t;
+  render();
+  if (t === 'paper') refresh();
+}
+
+function setMode(m) { mode = m; render(); }
+function setTier(t) { tier = t; render(); }
+
+// Converts OCC standard contract code (e.g. IWM261007P00280000) to exact Moomoo Web Strike URL:
+// https://www.moomoo.com/options/IWM261007P280000-US
+function getMoomooUrl(code) {
+  const m = /^([A-Z]+)(\d{6})([CP])(\d{8})$/.exec(code.trim().toUpperCase());
+  if (!m) return `https://www.moomoo.com/options/${code}-US`;
+  const [_, sym, yymmdd, type, strikePadded] = m;
+  const whole = parseInt(strikePadded.slice(0, 5), 10);
+  const frac = strikePadded.slice(5); // 3 decimals
+  const strikeFormatted = frac === '000' ? `${whole}000` : `${whole}${frac}`;
+  const mooSymbol = `${sym}${yymmdd}${type}${strikeFormatted}-US`;
+  return `https://www.moomoo.com/options/${mooSymbol}`;
+}
+
+function openMoomooChart(code) {
+  window.open(getMoomooUrl(code), '_blank');
+}
+
+const N = x => {
+  const t = 1 / (1 + .2316419 * Math.abs(x)),
+        p = .3989423 * Math.exp(-x*x/2) * t * (.3193815 + t*(-.3565638 + t*(1.781478 + t*(-1.821256 + t*1.330274))));
+  return x > 0 ? 1 - p : p;
+};
+
+function greeks(S, K, T, iv, call) {
+  const r = .045, sd = iv * Math.sqrt(T);
+  if (sd <= 0) return { d: 0, th: 0 };
+  const d1 = (Math.log(S/K) + (r + iv*iv/2)*T) / sd,
+        d2 = d1 - sd,
+        pdf = .3989423 * Math.exp(-d1*d1/2);
+  return {
+    d: call ? N(d1) : N(d1) - 1,
+    th: (-S * pdf * iv / (2 * Math.sqrt(T)) - (call ? 1 : -1) * r * K * Math.exp(-r*T) * N(call ? d2 : -d2)) / 365
+  };
+}
+
+const ema = (a, n) => { const k = 2 / (n + 1); return a.reduce((e, x, i) => i ? x*k + e*(1-k) : x, a[0]); };
+const rsi = (c, n=14) => {
+  if (c.length <= n) return 50;
+  let g = 0, l = 0;
+  for (let i = c.length - n; i < c.length; i++) {
+    const d = c[i] - c[i-1];
+    d > 0 ? g += d : l -= d;
+  }
+  return l ? 100 - 100 / (1 + g/l) : 100;
+};
+const hv = c => {
+  if (c.length < 2) return 0.2;
+  const r = c.slice(-21).map((x, i, a) => i ? Math.log(x / a[i-1]) : 0).slice(1);
+  const m = r.reduce((a, b) => a + b, 0) / r.length;
+  return Math.sqrt(r.reduce((a, b) => a + (b - m)**2, 0) / Math.max(1, r.length - 1)) * Math.sqrt(252);
+};
+const cl = (x, a=0, z=1) => Math.max(a, Math.min(z, x));
+
+function pick(o, S, T, call, m, b, fs, H, ed) {
+  const iv = o.impliedVolatility, bid = o.bid || 0, ask = o.ask || 0, mid = (bid + ask) / 2;
+  if (!(ask > 0) || mid < .1 || (o.openInterest || 0) < 100 || !(iv > 0)) return null;
+  const g = greeks(S, o.strike, T, iv, call), sp = (ask - bid) / mid, tg = m === 'intraday' ? .45 : .4, id = m === 'intraday';
+  let s = 25 * cl(Math.abs(b) / 85) + 15 * cl(1 - Math.abs(Math.abs(g.d) - tg) / .3) + 15 * cl(1 - sp / .15) + 10 * cl((o.volume || 0) / 500) + 10 * cl(1.3 - iv / (H || .2)) + 10 * cl(1 - Math.abs(g.th) / mid / (id ? .5 : .15)) + 10 * fs;
+  s = s * 100 / 95 - (ed < (id ? 1 : 10) ? 8 : 0);
+  const tier = s >= 75 ? 'Strict' : s >= 60 ? 'Balanced' : s >= 45 ? 'Aggressive' : null;
+  return tier && {
+    code: o.contractSymbol, k: o.strike, bid, ask, mid, iv, d: g.d, th: g.th, oi: o.openInterest, v: o.volume || 0,
+    score: Math.round(s), tier, earn: ed < (id ? 1 : 10), stop: mid * (id ? .65 : .6), tgt: mid * (id ? 1.5 : 1.8)
+  };
+}
+
+async function analyze(sym) {
+  const E = encodeURIComponent(sym);
+  const [ch, qt, c0] = await Promise.all([api('/api/chart?symbol=' + E), api('/api/quote?symbols=' + E), api('/api/chain?symbol=' + E)]);
+  const c = ch.chart.result[0].indicators.quote[0].close.filter(x => x != null),
+        q = qt.quoteResponse.result[0] || {},
+        S = c.at(-1);
+  const e20 = ema(c, 20), e50 = ema(c, 50), R = rsi(c), H = hv(c), chg = q.regularMarketChangePercent || 0;
+  const b = (S > e20 ? 20 : -20) + (e20 > e50 ? 25 : -25) + (S > e50 ? 10 : -10) + (R > 55 ? 15 : R < 45 ? -15 : 0) + (chg > .3 ? 15 : chg < -.3 ? -15 : 0);
+  if (Math.abs(b) < 30) return [];
+  const call = b > 0, etf = q.quoteType === 'ETF' || sym[0] === '^';
+  let f = 5;
+  if (!etf) {
+    const ar = parseFloat(q.averageAnalystRating) || 3;
+    f += ar < 2.2 ? 3 : ar > 3 ? -3 : 0;
+    if (q.forwardPE && q.trailingPE && q.forwardPE < q.trailingPE) f += 2;
+  }
+  const ed = q.earningsTimestamp ? (q.earningsTimestamp * 1000 - Date.now()) / 864e5 : 99,
+        fs = (call ? f : 10 - f) / 10,
+        dte = e => (e * 1000 + 864e5 - Date.now()) / 864e5,
+        ex = c0.optionChain.result[0].expirationDates,
+        out = [];
+  for (const m of ['intraday', 'swing']) {
+    const e = ex.find(e => m === 'intraday' ? dte(e) > 0 && dte(e) <= 3 : dte(e) >= 5 && dte(e) <= 14);
+    if (!e) continue;
+    const res = (await api(`/api/chain?symbol=${E}&date=${e}`)).optionChain.result[0],
+          op = res.options[0],
+          S2 = res.quote.regularMarketPrice || S;
+    out.push(...(call ? op.calls : op.puts).map(o => pick(o, S2, Math.max(dte(e), .05) / 365, call, m, b, fs, H, ed)).filter(Boolean).sort((a,b) => b.score - a.score).slice(0, 2).map(p => ({ ...p, sym, m, call, exp: e, b: Math.round(b), R: Math.round(R) })));
+  }
+  return out;
+}
+
+async function scan() {
+  if (busy) return;
+  busy = true;
+  picks = [];
+  msg = 'Connecting to bridge...';
+  render();
+  for (const s of cfg.uni.split(',').map(s => s.trim()).filter(Boolean)) {
+    msg = 'Scanning ' + s + '…';
+    render();
+    try {
+      picks.push(...await analyze(s));
+    } catch(e) {
+      console.warn('Bridge check for ' + s + ':', e.message);
+    }
+  }
+  busy = false;
+  msg = picks.length ? ('Synced: ' + new Date().toLocaleTimeString()) : 'Bridge offline or zero strikes returned';
+  render();
+}
+
+const dt = e => new Date(e * 1000).toISOString().slice(5, 10),
+      lbl = p => `${p.sym} ${dt(p.exp)} ${p.k}${p.call ? 'C' : 'P'}`;
+
+function rPicks() {
+  const L = picks.filter(p => p.m === mode && (tier === 'All' || p.tier === tier)).sort((a,b) => b.score - a.score);
+  return `
+  <div class="row" style="justify-content: space-between;">
+    <div class="row" style="margin:0">
+      ${[['intraday','Intraday (0-3 DTE)'],['swing','Swing (5-14 DTE)']].map(([m,t])=>`<button class="btn ${mode===m?'on':''}" onclick="setMode('${m}')">${t}</button>`).join('')}
+      <span class="mu" style="margin-left:8px;">Tier:</span>
+      ${['All','Strict','Balanced','Aggressive'].map(t=>`<button class="btn ${tier===t?'on':''}" onclick="setTier('${t}')">${t}</button>`).join('')}
+    </div>
+    <div class="row" style="margin:0">
+      <button class="btn pri" onclick="scan()">⚡ Scan Scanner</button>
+      <span class="mu mono" style="font-size:11px;">${msg}</span>
+    </div>
+  </div>
+  <div class="wrap"><table>
+    <thead>
+      <tr>
+        <th>Underlying & Strike</th>
+        <th>Mid</th>
+        <th>Bid / Ask</th>
+        <th>Delta</th>
+        <th>Theta/Day</th>
+        <th>IV</th>
+        <th>OI / Vol</th>
+        <th>Trend / RSI</th>
+        <th>Setup Tier</th>
+        <th>Stop → Target</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${L.map(p=>`<tr>
+        <td>
+          <div class="sym-name">${lbl(p)}</div>
+          <div class="sym-sub">${p.call?'LONG CALL':'LONG PUT'} ${p.earn?'• <span class="r">EARNINGS</span>':''}</div>
+        </td>
+        <td class="mono font-weight-bold">${p.mid.toFixed(2)}</td>
+        <td class="mono mu">${p.bid.toFixed(2)} /${p.ask.toFixed(2)}</td>
+        <td class="mono">${p.d.toFixed(2)}</td>
+        <td class="mono r">${p.th.toFixed(2)}</td>
+        <td class="mono">${(p.iv*100).toFixed(0)}%</td>
+        <td class="mono mu">${p.oi} /${p.v}</td>
+        <td class="mono">${p.b} /${p.R}</td>
+        <td><span class="tag ${p.tier}">${p.tier}${p.score}</span></td>
+        <td class="mono"><span class="r">${p.stop.toFixed(2)}</span> → <span class="g">${p.tgt.toFixed(2)}</span></td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn sm pri" onclick="add('${p.code}')">+ Paper</button>
+            <button class="btn sm" title="View exact strike chart on Moomoo" onclick="openMoomooChart('${p.code}')">Chart ↗</button>
+          </div>
+        </td>
+      </tr>`).join('') || `<tr><td colspan="11" class="mu" style="text-align:center; padding:32px;">${busy ? 'Analyzing option chains...' : 'Ready to scan. Start the local bridge and click <b>⚡ Scan Scanner</b>.'}</td></tr>`}
+    </tbody>
+  </table></div>`;
+}
+
+function add(code) {
+  const p = picks.find(x => x.code === code);
+  if (!p) return;
+  cfg.pos.push({
+    id: Date.now(), sym: p.sym, code, k: p.k, call: p.call, exp: p.exp,
+    qty: 1, entry: +p.mid.toFixed(2), live: p.mid, stop: +p.stop.toFixed(2), tgt: +p.tgt.toFixed(2),
+    openedAt: Date.now(), tier: p.tier, score: p.score, src: 'Auto-Picks', ts: Date.now()
+  });
+  save();
+  setTab('paper');
+}
+
+function ed(i, k, v) {
+  if (!cfg.pos[i]) return;
+  cfg.pos[i][k] = Math.max(0, +v);
+  save();
+  render();
+}
+
+function targetProgress(p) {
+  const entry = Number(p.entry), live = Number(p.live), target = Number(p.tgt);
+  if (!(entry > 0) || !(live > 0) || !(target > entry)) {
+    return `<div class="target-progress"><span class="mu">Unavailable</span><div class="progress-meta"><span>Entry/target invalid</span></div></div>`;
+  }
+  const raw = ((live - entry) / (target - entry)) * 100;
+  const pct = Math.max(0, Math.min(100, raw));
+  const remaining = Math.max(0, target - live);
+  let cls = 'target-loss', color = 'var(--red)', state = 'Below entry';
+  if (live >= target) { cls = 'reached'; color = 'var(--green)'; state = 'Target reached'; }
+  else if (raw >= 80) { cls = 'target-high'; color = 'var(--green)'; state = `$${remaining.toFixed(2)} remaining`; }
+  else if (raw >= 50) { cls = 'target-mid'; color = 'var(--blue)'; state = `$${remaining.toFixed(2)} remaining`; }
+  else if (raw >= 0) { cls = 'target-low'; color = 'var(--amber)'; state = `$${remaining.toFixed(2)} remaining`; }
+  return `<div class="target-progress" title="Entry $${entry.toFixed(2)} · Live $${live.toFixed(2)} · Target $${target.toFixed(2)}">
+    <div class="progress-meta"><span class="progress-label" style="color:${color}"><span class="progress-dot"></span>${raw.toFixed(0)}%</span><span>${state}</span></div>
+    <div class="progress-track"><div class="progress-fill ${cls}" style="width:${pct.toFixed(1)}%"></div></div>
+    <div class="progress-meta"><span>Entry $${entry.toFixed(2)}</span><span>Target $${target.toFixed(2)}</span></div>
+  </div>`;
+}
+function stopLossProgress(p) {
+  const entry = Number(p.entry), live = Number(p.live), stop = Number(p.stop);
+  if (!(entry > 0) || !(live > 0) || !(stop >= 0) || !(entry > stop)) {
+    return `<div class="target-progress"><span class="mu">Unavailable</span><div class="progress-meta"><span>Entry/stop invalid</span></div></div>`;
+  }
+  const buffer = entry - stop;
+  const remaining = live - stop;
+  const safetyRaw = (remaining / buffer) * 100;
+  const pct = Math.max(0, Math.min(100, safetyRaw));
+  let cls = 'stop-safe', color = 'var(--green)', state = `$${Math.max(0,remaining).toFixed(2)} above stop`;
+  if (live <= stop) { cls = 'stop-hit'; color = 'var(--red)'; state = 'Stop reached'; }
+  else if (safetyRaw <= 25) { cls = 'stop-danger'; color = 'var(--red)'; state = `$${remaining.toFixed(2)} above stop`; }
+  else if (safetyRaw <= 60) { cls = 'stop-warn'; color = 'var(--amber)'; state = `$${remaining.toFixed(2)} above stop`; }
+  return `<div class="target-progress" title="Stop $${stop.toFixed(2)} · Live $${live.toFixed(2)} · Entry $${entry.toFixed(2)}">
+    <div class="progress-meta"><span class="progress-label" style="color:${color}"><span class="progress-dot"></span>${safetyRaw.toFixed(0)}% safety</span><span>${state}</span></div>
+    <div class="progress-track"><div class="progress-fill ${cls}" style="width:${pct.toFixed(1)}%"></div></div>
+    <div class="progress-meta"><span>Stop $${stop.toFixed(2)}</span><span>Entry $${entry.toFixed(2)}</span></div>
+  </div>`;
+}
+function csvCell(v) {
+  const text = v == null ? '' : String(v);
+  return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+}
+function exportCloseReasonsCSV() {
+  if (!cfg.closed.length) { alert('No closed positions to export.'); return; }
+  const headers = ['Contract','Symbol','Expiry','Type','Strike','Setup Tier','Setup Score','Opened Time','Quantity','Entry Price','Exit Price','Target At Close','Stop Loss','Close Reason','Auto Closed','Close Evidence','Quote Source','Quote Time','Closed Time','Realized P&L','Fees'];
+  const rows = cfg.closed.map(p => {
+    const exit = Number(p.exitPrice), target = Number(p.targetAtClose != null ? p.targetAtClose : p.tgt);
+    const auto = String(p.closeReason || '').startsWith('Auto-close');
+    const evidence = auto && Number.isFinite(exit) && Number.isFinite(target)
+      ? `Live $${exit.toFixed(2)} >= Target $${target.toFixed(2)}; difference $${(exit-target).toFixed(2)}`
+      : `Closed at $${Number.isFinite(exit) ? exit.toFixed(2) : '--'}`;
+    return [p.code,p.sym,p.exp,p.type,p.strike,normalizedTier(p),p.score,p.openedAt ? new Date(Number(p.openedAt)).toISOString() : '',p.qty,p.entry,p.exitPrice,target,p.stop,p.closeReason || 'Manual close',auto ? 'Yes' : 'No',evidence,p.quoteSourceAtClose || p.src || '',p.quoteTimeAtClose || p.ts ? new Date(Number(p.quoteTimeAtClose || p.ts)).toISOString() : '',p.closedAt ? new Date(Number(p.closedAt)).toISOString() : '',p.realizedPL,p.feeTotal];
+  });
+  const csv = '\uFEFF' + [headers,...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = `paper-trading-close-reasons-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function closeExplanation(p) {
+  const auto = String(p.closeReason || '').startsWith('Auto-close');
+  const exit = Number(p.exitPrice), target = Number(p.targetAtClose != null ? p.targetAtClose : p.tgt);
+  const source = p.quoteSourceAtClose || p.src || 'Unknown source';
+  const quoteTime = Number(p.quoteTimeAtClose || p.ts);
+  if (auto) {
+    const over = Number.isFinite(exit) && Number.isFinite(target) ? exit - target : NaN;
+    return `<div class="close-why">
+      <div class="reason">Target condition was met</div>
+      <div>Live $${Number.isFinite(exit) ? exit.toFixed(2) : '--'} ≥ Target $${Number.isFinite(target) ? target.toFixed(2) : '--'}</div>
+      <div class="evidence">${Number.isFinite(over) ? `Triggered $${Math.max(0,over).toFixed(2)} at/above target · ` : ''}${source}${quoteTime ? ` · Quote ${new Date(quoteTime).toLocaleTimeString()}` : ''}</div>
+    </div>`;
+  }
+  return `<div class="close-why"><div class="reason">${p.closeReason || 'Manual close'}</div><div class="evidence">Closed at $${Number.isFinite(exit) ? exit.toFixed(2) : '--'}${source ? ` · ${source}` : ''}</div></div>`;
+}
+
+function closePos(i, reason = 'Manual close') {
+  const p = cfg.pos[i];
+  if (!p) return;
+  const feeTotal = 2 * cfg.fee * p.qty;
+  const realizedPL = (p.live - p.entry) * 100 * p.qty - feeTotal;
+  cfg.closed.push({
+    ...p,
+    exitPrice: p.live,
+    realizedPL,
+    feeTotal,
+    closedAt: Date.now(),
+    closeReason: reason,
+    targetAtClose: Number(p.tgt),
+    quoteSourceAtClose: p.src || 'Unknown source',
+    quoteTimeAtClose: Number(p.ts) || Date.now(),
+    targetDifferenceAtClose: Number(p.live) - Number(p.tgt)
+  });
+  cfg.pos.splice(i, 1);
+  save();
+  render();
+}
+
+function normalizedTier(p) {
+  const raw = String(p && p.tier || '').trim().toLowerCase();
+  if (raw.startsWith('strict')) return 'Strict';
+  if (raw.startsWith('balanc')) return 'Balanced';
+  if (raw.startsWith('aggress')) return 'Aggressive';
+  return '';
+}
+function setupTierTag(p) {
+  const tierName = normalizedTier(p);
+  const score = Number(p && p.score);
+  if (!tierName) return '<span class="mu">Not captured</span>';
+  return `<span class="tag ${tierName}">${tierName}${Number.isFinite(score) ? score : ''}</span>`;
+}
+function tradeDateTime(value) {
+  const ms = Number(value);
+  if (!Number.isFinite(ms) || ms <= 0) return '<span class="mu">Not captured</span>';
+  const d = new Date(ms);
+  if (Number.isNaN(d.getTime())) return '<span class="mu">Not captured</span>';
+  return `<div class="trade-datetime"><div class="date">${d.toLocaleDateString()}</div><div class="time">${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div></div>`;
+}
+
+function paperTierMatch(p, selected) {
+  return selected === 'All' || normalizedTier(p) === selected;
+}
+function paperPL(p, closed = false) {
+  if (closed) return Number.isFinite(Number(p.realizedPL)) ? Number(p.realizedPL) : 0;
+  return (Number(p.live) - Number(p.entry)) * 100 * Number(p.qty || 0) - (2 * Number(cfg.fee || 0) * Number(p.qty || 0));
+}
+function paperSortRows(rows, sort, closed = false) {
+  return rows.sort((a,b) => {
+    if (sort === 'lowest') return paperPL(a.p, closed) - paperPL(b.p, closed);
+    const aTime = Number(closed ? a.p.closedAt : (a.p.openedAt || a.p.id)) || 0;
+    const bTime = Number(closed ? b.p.closedAt : (b.p.openedAt || b.p.id)) || 0;
+    return bTime - aTime;
+  });
+}
+function setPaperFilter(kind, value) {
+  if (kind === 'openTier') openTierFilter = value;
+  if (kind === 'openSort') openSort = value;
+  if (kind === 'closedTier') closedTierFilter = value;
+  if (kind === 'closedSort') closedSort = value;
+  render();
+}
+
+function rPaper() {
+  let activeTot = 0, closedTot = 0, totalFees = 0;
+
+  const openView = paperSortRows(cfg.pos.map((p,i) => ({p,i})).filter(x => paperTierMatch(x.p, openTierFilter)), openSort, false);
+  const activeRows = openView.map(({p, i}) => {
+    const fee = 2 * cfg.fee * p.qty;
+    const pl = (p.live - p.entry) * 100 * p.qty - fee;
+    activeTot += pl;
+    totalFees += fee;
+    return `<tr>
+      <td>
+        <div class="sym-name">${lbl(p)}</div>
+        <div class="sym-sub mono">${p.code}</div>
+      </td>
+      <td>${setupTierTag(p)}</td>
+      <td>${tradeDateTime(p.openedAt || p.id)}</td>
+      <td><input type="number" min="1" value="${p.qty}" onchange="ed(${i},'qty',this.value)"></td>
+      <td><input type="number" step="0.01" value="${p.entry}" onchange="ed(${i},'entry',this.value)"></td>
+      <td>
+        <input type="number" step="0.01" title="Stop Loss" value="${p.stop || (p.entry * 0.65).toFixed(2)}" onchange="ed(${i},'stop',this.value)">
+        <span class="mu">→</span>
+        <input type="number" step="0.01" title="Target" value="${p.tgt || (p.entry * 1.5).toFixed(2)}" onchange="ed(${i},'tgt',this.value)">
+      </td>
+      <td>${targetProgress(p)}</td>
+      <td>${stopLossProgress(p)}</td>
+      <td class="mono">
+        ${p.live.toFixed(2)}
+        <span class="mu" style="font-size:10px;">${p.src ? `[${p.src}]` : ''}</span>
+      </td>
+      <td class="mono ${pl >= 0 ? 'g' : 'r'} font-weight-bold">${pl >= 0 ? '+' : ''}${pl.toFixed(2)}</td>
+      <td class="mono mu">${fee.toFixed(2)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn sm pri" title="Close at live market price" onclick="closePos(${i},'Manual close')">Close</button>
+          <button class="btn sm" title="View exact strike chart on Moomoo" onclick="openMoomooChart('${p.code}')">Chart ↗</button>
+          <button class="btn sm danger" title="Delete without logging" onclick="cfg.pos.splice(${i},1);save();render()">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const closedView = paperSortRows(cfg.closed.map((p,i) => ({p,i})).filter(x => paperTierMatch(x.p, closedTierFilter)), closedSort, true);
+  const closedRows = closedView.map(({p, i}) => {
+    const fee = p.feeTotal != null ? p.feeTotal : (2 * cfg.fee * p.qty);
+    const pl = p.realizedPL;
+    closedTot += pl;
+    totalFees += fee;
+    return `<tr>
+      <td>
+        <div class="sym-name">${lbl(p)}</div>
+        <div class="sym-sub mono">${p.code}</div>
+      </td>
+      <td>${setupTierTag(p)}</td>
+      <td>${tradeDateTime(p.openedAt || p.id)}</td>
+      <td>${tradeDateTime(p.closedAt)}</td>
+      <td class="mono">${p.qty}</td>
+      <td class="mono">${p.entry.toFixed(2)}</td>
+      <td class="mono">
+        Exit: <b>${p.exitPrice.toFixed(2)}</b>
+        <span class="mu" style="font-size:11px;">(SL: ${p.stop||'--'} | TP: ${p.tgt||'--'})</span>
+        <div class="sym-sub">${p.closeReason || 'Manual close'}</div>
+      </td>
+      <td>${closeExplanation(p)}</td>
+      <td class="mono ${pl >= 0 ? 'g' : 'r'} font-weight-bold">${pl >= 0 ? '+' : ''}${pl.toFixed(2)}</td>
+      <td class="mono mu">${fee.toFixed(2)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn sm" title="View Moomoo chart" onclick="openMoomooChart('${p.code}')">Chart ↗</button>
+          <button class="btn sm danger" title="Delete record" onclick="cfg.closed.splice(${i},1);save();render()">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const grandTot = activeTot + closedTot;
+
+  return `
+  <div class="kpi-deck">
+    <div class="kpi-card">
+      <div class="kpi-label">Combined Net P&amp;L</div>
+      <div class="kpi-val ${grandTot >= 0 ? 'g' : 'r'}">${grandTot >= 0 ? '+' : ''}$${grandTot.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Active Unrealized</div>
+      <div class="kpi-val ${activeTot >= 0 ? 'g' : 'r'}">${activeTot >= 0 ? '+' : ''}$${activeTot.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Closed Realized</div>
+      <div class="kpi-val ${closedTot >= 0 ? 'g' : 'r'}">${closedTot >= 0 ? '+' : ''}$${closedTot.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Moomoo Total Fees (Roundtrip)</div>
+      <div class="kpi-val mu">$${totalFees.toFixed(2)}</div>
+    </div>
+  </div>
+
+  <div class="row" style="justify-content: space-between;">
+    <div class="mu font-weight-bold">OPEN POSITIONS (${openView.length} of ${cfg.pos.length})</div>
+    <div class="row" style="margin:0">
+      <span class="paper-filter-label">Tier</span>
+      <select class="paper-filter" aria-label="Filter open positions by setup tier" onchange="setPaperFilter('openTier',this.value)">
+        ${['All','Strict','Balanced','Aggressive'].map(x => `<option value="${x}" ${openTierFilter===x?'selected':''}>${x === 'All' ? 'All setup tiers' : x}</option>`).join('')}
+      </select>
+      <span class="paper-filter-label">Show</span>
+      <select class="paper-filter" aria-label="Sort open positions" onchange="setPaperFilter('openSort',this.value)">
+        <option value="newest" ${openSort==='newest'?'selected':''}>Newest first</option>
+        <option value="lowest" ${openSort==='lowest'?'selected':''}>Lowest P&amp;L first</option>
+      </select>
+      <span class="${cfg.autoCloseTarget ? 'auto-badge' : 'mu'}">Auto-close at target: ${cfg.autoCloseTarget ? 'ON' : 'OFF'}</span>
+      <button class="btn sm ${cfg.autoCloseTarget ? 'warn' : 'pri'}" onclick="cfg.autoCloseTarget=!cfg.autoCloseTarget;save();render()">${cfg.autoCloseTarget ? 'Disable' : 'Enable'}</button>
+      <button class="btn sm" onclick="refresh(true)">Refresh live prices</button>
+    </div>
+  </div>
+  <div class="wrap"><table>
+    <thead>
+      <tr>
+        <th>Contract</th>
+        <th>Setup Tier</th>
+        <th>Opened Date &amp; Time</th>
+        <th>Qty</th>
+        <th>Entry ($)</th>
+        <th>Stop Loss → Target</th>
+        <th>Target Progress</th>
+        <th>Stop-Loss Progress</th>
+        <th>Live Price</th>
+        <th>Net P&amp;L</th>
+        <th>Fees</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${activeRows || '<tr><td colspan="12" class="mu" style="text-align:center; padding:24px;">No open positions match the selected setup tier.</td></tr>'}
+    </tbody>
+  </table></div>
+
+  ${cfg.closed.length ? `
+  <div class="row" style="justify-content: space-between; margin-top: 24px;">
+    <div class="mu font-weight-bold">CLOSED POSITIONS RECORD (${closedView.length} of ${cfg.closed.length})</div>
+    <div class="row" style="margin:0">
+      <span class="paper-filter-label">Tier</span>
+      <select class="paper-filter" aria-label="Filter closed positions by setup tier" onchange="setPaperFilter('closedTier',this.value)">
+        ${['All','Strict','Balanced','Aggressive'].map(x => `<option value="${x}" ${closedTierFilter===x?'selected':''}>${x === 'All' ? 'All setup tiers' : x}</option>`).join('')}
+      </select>
+      <span class="paper-filter-label">Show</span>
+      <select class="paper-filter" aria-label="Sort closed positions" onchange="setPaperFilter('closedSort',this.value)">
+        <option value="newest" ${closedSort==='newest'?'selected':''}>Newest first</option>
+        <option value="lowest" ${closedSort==='lowest'?'selected':''}>Lowest P&amp;L first</option>
+      </select>
+      <button class="btn sm pri" onclick="exportCloseReasonsCSV()">Export Close Reasons CSV</button>
+      <button class="btn sm danger" onclick="if(confirm('Clear all closed trades?')){cfg.closed=[];save();render();}">Clear Closed Trades</button>
+    </div>
+  </div>
+  <div class="wrap"><table>
+    <thead>
+      <tr>
+        <th>Contract</th>
+        <th>Setup Tier</th>
+        <th>Opened Date &amp; Time</th>
+        <th>Closed Date &amp; Time</th>
+        <th>Qty</th>
+        <th>Entry</th>
+        <th>Exit &amp; Target Setup</th>
+        <th>Why Closed</th>
+        <th>Realized P&amp;L</th>
+        <th>Fees Paid</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${closedRows || '<tr><td colspan="11" class="mu" style="text-align:center;padding:24px;">No closed positions match the selected setup tier.</td></tr>'}
+    </tbody>
+  </table></div>` : ''}`;
+}
+
+async function refresh(manual = false) {
+  if (refreshing || !cfg.pos.length) return;
+  refreshing = true;
+  const snapshot = [...cfg.pos];
+  const moomooResults = await Promise.all(snapshot.map(async p => {
+    try {
+      const data = await api('/api/moomoo/quote?code=' + encodeURIComponent(p.code));
+      const q = data && data.quote;
+      return q && Number(q.last) > 0 ? { p, price: Number(q.last), ts: Number(q.ts) || Date.now(), cached: !!q.cached } : null;
+    } catch (e) { return null; }
+  }));
+  const gotMoomoo = new Set();
+  for (const r of moomooResults) {
+    if (!r || !cfg.pos.includes(r.p)) continue;
+    r.p.live = r.price;
+    r.p.src = r.cached ? 'Moomoo cached' : 'Moomoo live';
+    r.p.ts = r.ts;
+    r.p.quoteError = '';
+    gotMoomoo.add(r.p.code);
+  }
+  // Yahoo is fallback only. It never overwrites a successful Moomoo quote in the same cycle.
+  const fallback = cfg.pos.filter(p => !gotMoomoo.has(p.code));
+  const groups = {};
+  fallback.forEach(p => (groups[p.sym + '|' + p.exp] ??= []).push(p));
+  for (const key of Object.keys(groups)) {
+    try {
+      const [sym, exp] = key.split('|');
+      const data = await api(`/api/chain?symbol=${encodeURIComponent(sym)}&date=${encodeURIComponent(exp)}`);
+      const option = data.optionChain.result[0].options[0];
+      groups[key].forEach(p => {
+        const c = [...option.calls, ...option.puts].find(x => x.contractSymbol === p.code);
+        if (!c) return;
+        const bid = Number(c.bid), ask = Number(c.ask), last = Number(c.lastPrice);
+        const price = bid > 0 && ask > 0 ? (last >= bid && last <= ask ? last : (bid + ask) / 2) : last;
+        if (Number.isFinite(price) && price > 0) {
+          p.live = price; p.src = 'Yahoo fallback'; p.ts = (Number(c.lastTradeDate) || 0) * 1000 || Date.now();
+        }
+      });
+    } catch (e) {}
+  }
+  // Evaluate targets only after the complete quote cycle. Iterate backwards because closing removes positions.
+  if (cfg.autoCloseTarget) {
+    for (let i = cfg.pos.length - 1; i >= 0; i--) {
+      const p = cfg.pos[i], live = Number(p.live), target = Number(p.tgt);
+      if (live > 0 && target > 0 && live >= target && p.ts) closePos(i, 'Auto-close: target reached');
+    }
+  }
+  save();
+  refreshing = false;
+  if (tab === 'paper' && document.activeElement.tagName !== 'INPUT') render();
+}
+function rSet() {
+  return `<div class="set">
+    <h3 style="margin-top:0">Terminal Configuration</h3>
+    <label>Local Bridge URL</label>
+    <input id="b" value="${cfg.bridge}">
+    
+    <label>Watchlist Symbols (Comma separated)</label>
+    <input id="u" value="${cfg.uni}">
+
+    <label>Moomoo Fee per Contract ($/side, default: $0.69 including OCC $0.025 &amp; ORF $0.0122)</label>
+    <input id="f" value="${cfg.fee}">
+
+    <div style="margin-top: 16px;">
+      <button class="btn pri" onclick="sv()">Save Settings</button>
+      <button class="btn" onclick="dl()">Download Bridge (server.js)</button>
+    </div>
+
+    <h3 style="margin-top:28px">Moomoo OpenAPI Direct Gateway</h3>
+    <label>OpenD Host</label>
+    <input id="mh" value="127.0.0.1">
+
+    <label>OpenD WebSocket Port</label>
+    <input id="mp" value="33333">
+
+    <label>OpenD WebSocket Key (the plain-text password you set in OpenD, not its MD5 hash)</label>
+    <input id="mk" autocomplete="off" placeholder="Leave blank if unchanged">
+
+    <label>API Secret (optional, not used by the OpenD WebSocket login)</label>
+    <input id="ms" type="password" autocomplete="off" placeholder="Leave blank if unchanged">
+
+    <div style="margin-top: 16px;">
+      <button class="btn" onclick="mm()">Connect Gateway</button>
+      <span id="mst" class="mu mono" style="margin-left: 8px;"></span>
+    </div>
+  </div>`;
+}
+
+function dl() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([$('#bridge').textContent.trim() + '\n'], { type: 'text/javascript' }));
+  a.download = 'server.js';
+  a.click();
+}
+
+function sv() {
+  cfg.bridge = $('#b').value.trim();
+  cfg.uni = $('#u').value;
+  cfg.fee = +$('#f').value || 0;
+  save();
+  ping();
+  alert('Settings saved successfully.');
+  render();
+}
+
+async function mm() {
+  const out = $('#mst');
+  out.className = 'mu mono';
+  try {
+    await fetch(cfg.bridge + '/api/moomoo/config', {
+      method: 'POST',
+      body: JSON.stringify({ key: $('#mk').value, secret: $('#ms').value, host: $('#mh').value, port: +$('#mp').value })
+    });
+    $('#mk').value = $('#ms').value = '';
+    // The login handshake is asynchronous, so poll instead of reading the status once.
+    for (let i = 1; i <= 14; i++) {
+      out.textContent = 'Connecting to OpenD… ' + i + 's';
+      await new Promise(r => setTimeout(r, 1000));
+      const s = await api('/api/moomoo/status');
+      if (s.connected) {
+        out.className = 'g mono';
+        out.textContent = '✔ Connected to OpenD at ' + s.host + ':' + s.port;
+        ping();
+        return;
+      }
+      if (s.error && s.error !== 'connecting') {
+        out.className = 'r mono';
+        out.textContent = '✖ ' + s.error;
+        return;
+      }
+    }
+    out.className = 'r mono';
+    out.textContent = '✖ Timed out waiting for OpenD. Check the bridge terminal for [moomoo] logs.';
+  } catch(e) {
+    out.className = 'r mono';
+    out.textContent = 'Bridge connection failed.';
+  }
+}
+
+let lastMoomooConnected = null;
+let lastDisconnectAlertAt = 0;
+function playConnectionAlert(kind) {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC(), osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = kind === 'disconnect' ? 420 : 720;
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.32);
+    osc.start(); osc.stop(ctx.currentTime + 0.34);
+    osc.onended = () => ctx.close();
+  } catch(e) {}
+}
+function showConnectionAlert(kind, detail) {
+  const host = $('#alert-stack');
+  if (!host) return;
+  const isBack = kind === 'reconnected';
+  const item = document.createElement('div');
+  item.className = 'disconnect-alert' + (isBack ? ' reconnected' : '');
+  item.setAttribute('role','alert');
+  const safeDetail = String(detail || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  item.innerHTML = `<div><div class="alert-title">${isBack ? 'Moomoo reconnected' : 'Moomoo disconnected'}</div><div class="alert-text">${safeDetail}<br>${new Date().toLocaleString()}</div></div><button type="button" class="alert-close" aria-label="Dismiss alert">×</button>`;
+  item.querySelector('.alert-close').addEventListener('click', () => item.remove());
+  host.prepend(item);
+  while (host.children.length > 3) host.lastElementChild.remove();
+  playConnectionAlert(kind);
+  setTimeout(() => item.remove(), isBack ? 6000 : 12000);
+}
+function updateMoomooConnectionAlert(connected, detail) {
+  // Do not alert during initial page status detection. Alert only on a real state transition.
+  if (lastMoomooConnected === null) { lastMoomooConnected = connected; return; }
+  if (lastMoomooConnected && !connected) {
+    const now = Date.now();
+    if (now - lastDisconnectAlertAt > 30000) {
+      lastDisconnectAlertAt = now;
+      showConnectionAlert('disconnect', detail || 'OpenD connection was lost. Yahoo fallback may be used for prices.');
+    }
+  } else if (!lastMoomooConnected && connected) {
+    showConnectionAlert('reconnected', 'OpenD live-price connection has been restored.');
+  }
+  lastMoomooConnected = connected;
+}
+
+async function ping() {
+  const bridgeDot = $('#dot'), bridgeText = $('#bs');
+  const mmDot = $('#mm-dot'), mmText = $('#mm-status'), mmPill = $('#mm-pill');
+  if (mmDot) mmDot.className = 'dot checking';
+  if (mmText) { mmText.textContent = 'MOOMOO CHECKING'; mmText.style.color = 'var(--amber)'; }
+  try {
+    const st = await api('/api/moomoo/status');
+    bridgeDot.classList.add('online');
+    bridgeText.textContent = 'BRIDGE ONLINE';
+    bridgeText.style.color = 'var(--green)';
+    if (st.connected) {
+      mmDot.className = 'dot online';
+      mmText.textContent = 'MOOMOO CONNECTED';
+      mmText.style.color = 'var(--green)';
+      mmPill.title = `OpenD connected at ${st.host}:${st.port} · checked ${new Date().toLocaleTimeString()}`;
+      updateMoomooConnectionAlert(true);
+    } else if (!st.configured) {
+      mmDot.className = 'dot warning';
+      mmText.textContent = 'MOOMOO NOT CONFIGURED';
+      mmText.style.color = 'var(--amber)';
+      mmPill.title = 'Add Moomoo credentials in Settings, then connect to OpenD.';
+      updateMoomooConnectionAlert(false, 'Moomoo is not configured. Yahoo fallback may be used for prices.');
+    } else {
+      mmDot.className = 'dot offline';
+      mmText.textContent = 'MOOMOO DISCONNECTED';
+      mmText.style.color = 'var(--red)';
+      mmPill.title = `${st.error || 'OpenD is not connected'} · ${st.host}:${st.port} · checked ${new Date().toLocaleTimeString()}`;
+      updateMoomooConnectionAlert(false, st.error || 'OpenD connection was lost. Yahoo fallback may be used for prices.');
+    }
+  } catch(e) {
+    bridgeDot.classList.remove('online');
+    bridgeText.textContent = 'BRIDGE OFFLINE';
+    bridgeText.style.color = 'var(--red)';
+    if (mmDot) mmDot.className = 'dot offline';
+    if (mmText) { mmText.textContent = 'MOOMOO UNAVAILABLE'; mmText.style.color = 'var(--red)'; }
+    if (mmPill) mmPill.title = 'The local bridge is offline, so Moomoo status cannot be checked.';
+    updateMoomooConnectionAlert(false, 'Local bridge is offline. Moomoo prices are unavailable.');
+  }
+}
+
+function render() {
+  $('#v').innerHTML = tab === 'picks' ? rPicks() : tab === 'paper' ? rPaper() : rSet();
+  ['picks', 'paper', 'set'].forEach(t => {
+    const el = document.getElementById('btn-' + t);
+    if (el) el.classList.toggle('on', tab === t);
+  });
+}
+
+// Initial Boot
+render();
+ping();
+setInterval(ping, 10000);
+setInterval(refresh, 15000);
+</script>
+</body>
+</html>
