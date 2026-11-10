@@ -1,0 +1,1392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AlphaPulse | Pro Options Terminal</title>
+<style>
+:root {
+  --bg: #0b0f17;
+  --surface: #111723;
+  --surface-raised: #182234;
+  --border: #223048;
+  --border-focus: #3b82f6;
+  --tx-main: #f1f5f9;
+  --tx-muted: #8494ab;
+  --tx-faint: #4c5d77;
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.12);
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.12);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59, 130, 246, 0.14);
+  --amber: #f59e0b;
+  --amber-bg: rgba(245, 158, 11, 0.14);
+  --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-raised: #f8fafc;
+    --border: #dbe2ea;
+    --border-focus: #2563eb;
+    --tx-main: #0f172a;
+    --tx-muted: #64748b;
+    --tx-faint: #94a3b8;
+    --green: #059669;
+    --green-bg: #ecfdf5;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--tx-main);
+  font: 13px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+.brand-badge {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+nav { display: flex; gap: 6px; }
+.btn {
+  background: var(--surface-raised);
+  color: var(--tx-main);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 12px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { background: var(--border); }
+.btn.on, .btn.pri {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.btn.sm { padding: 3px 8px; font-size: 11px; }
+.btn.danger { color: var(--red); border-color: rgba(239,68,68,0.3); }
+.btn.danger:hover { background: var(--red-bg); }
+.status-pill {
+  font-size: 11px;
+  color: var(--tx-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+.dot.online {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.mkt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.mkt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.mkt-sep {
+  color: var(--tx-faint);
+}
+.mkt-clock {
+  color: var(--tx-main);
+  font-weight: 600;
+}
+main {
+  padding: 18px 20px;
+  max-width: 1400px;
+  margin: auto;
+}
+.kpi-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.kpi-label { font-size: 11px; color: var(--tx-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-val { font-size: 20px; font-weight: 700; font-family: var(--mono); margin-top: 4px; }
+.wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+th {
+  background: var(--surface-raised);
+  color: var(--tx-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+th:first-child, td:first-child { text-align: left; }
+.tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+.tag.Strict { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+.tag.Balanced { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+.trade-datetime { min-width:138px; line-height:1.4; }
+.trade-datetime .date { color:var(--tx-main); font:11px var(--mono); }
+.trade-datetime .time { color:var(--tx-muted); font:10px var(--mono); }
+.paper-filter { background:var(--surface-raised); color:var(--tx-main); border:1px solid var(--border); border-radius:5px; padding:6px 8px; font:11px var(--sans); }
+.paper-filter:focus { outline:none; border-color:var(--border-focus); }
+.paper-filter-label { color:var(--tx-muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.35px; }
+
+.tag.Aggressive { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+.sym-name { font-weight: 700; color: var(--tx-main); }
+.sym-sub { font-size: 11px; color: var(--tx-muted); }
+.g { color: var(--green); }
+.r { color: var(--red); }
+.mu { color: var(--tx-muted); }
+.mono { font-family: var(--mono); }
+input {
+  background: var(--surface-raised);
+  color: var(--tx-main);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  width: 82px;
+  text-align: right;
+}
+input:focus { border-color: var(--border-focus); outline: none; }
+.set { background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+.set label { display: block; margin: 14px 0 4px; color: var(--tx-muted); font-size: 12px; font-weight: 600; }
+.set input { width: 100%; max-width: 500px; text-align: left; padding: 7px 10px; }
+.row { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; align-items: center; }
+.actions-cell { display: flex; gap: 4px; justify-content: flex-end; }
+.live-meta { font-size:10px; color:var(--tx-muted); margin-top:2px; }
+.auto-badge { color:var(--green); font-size:11px; font-weight:600; }
+.btn.warn { color:var(--amber); border-color:rgba(245,158,11,.35); }
+.target-progress { min-width:150px; }
+.progress-track { height:8px; background:var(--surface-raised); border:1px solid var(--border); border-radius:999px; overflow:hidden; margin:5px 0 4px; }
+.progress-fill { height:100%; border-radius:999px; transition:width .2s ease; }
+.progress-fill.target-loss { background:var(--red); }
+.progress-fill.target-low { background:var(--amber); }
+.progress-fill.target-mid { background:var(--blue); }
+.progress-fill.target-high, .progress-fill.reached { background:var(--green); }
+.progress-fill.stop-safe { background:var(--green); }
+.progress-fill.stop-warn { background:var(--amber); }
+.progress-fill.stop-danger, .progress-fill.stop-hit { background:var(--red); }
+.progress-label { display:inline-flex; align-items:center; gap:5px; }
+.progress-dot { width:7px; height:7px; border-radius:50%; display:inline-block; background:currentColor; }
+
+.progress-meta { display:flex; justify-content:space-between; gap:8px; font:10px var(--mono); color:var(--tx-muted); }
+.close-why { min-width:220px; line-height:1.45; }
+.close-why .reason { color:var(--tx-main); font-weight:700; }
+.close-why .evidence { color:var(--tx-muted); font-size:10px; margin-top:3px; }
+.regime-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap}.regime-title{font-size:12px;color:var(--tx-muted);text-transform:uppercase;letter-spacing:.5px}.regime-value{font:700 18px var(--mono)}.regime-Uptrend{color:var(--green)}.regime-Downtrend{color:var(--red)}.regime-Sideways{color:var(--amber)}.regime-Mixed{color:var(--blue)}.regime-meta{font:11px var(--mono);color:var(--tx-muted)}
+
+
+.risk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.risk-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px}.risk-card .k{font-size:10px;text-transform:uppercase;color:var(--tx-muted);letter-spacing:.4px}.risk-card .v{font:700 16px var(--mono);margin-top:4px}.risk-lock{border-color:var(--red);box-shadow:inset 3px 0 var(--red)}.risk-ok{border-color:color-mix(in srgb,var(--green) 55%,var(--border))}.warning-box{padding:10px 12px;border:1px solid var(--amber);background:color-mix(in srgb,var(--amber) 8%,var(--surface));border-radius:7px;margin-bottom:12px;font-size:11px}.set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 16px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span>AlphaPulse</span>
+    <span class="brand-badge">PRO TERMINAL</span>
+  </div>
+  <nav>
+    <button class="btn on" id="btn-picks" onclick="setTab('picks')">⚡ Auto-Picks</button>
+    <button class="btn" id="btn-paper" onclick="setTab('paper')">💼 Paper Trading</button>
+    <button class="btn" id="btn-set" onclick="setTab('set')">⚙️ Settings</button>
+  </nav>
+  <div class="header-right">
+    <div class="mkt-pill" title="US Options Market Hours: Mon–Fri 09:30–16:00 ET">
+      <span class="mkt-status" id="us-mkt-status">
+        <span class="dot" id="us-mkt-dot"></span>
+        <span id="us-mkt-lbl">US MARKET --</span>
+      </span>
+      <span class="mkt-sep">|</span>
+      <span class="mkt-clock" id="us-mkt-time">--:--:-- ET</span>
+    </div>
+    <div class="status-pill">
+      <span class="dot" id="dot"></span>
+      <span id="bs">BRIDGE OFFLINE</span>
+    </div>
+  </div>
+</header>
+
+<main id="v"></main>
+
+<main class="mu" style="padding-top:0; font-size:11px;">
+  Market data delayed by ~15m when routing via Yahoo fallback. Auto-sync occurs every 15s. Realized P&amp;L records net of commissions and OCC/ORF clearing fees.
+</main>
+
+<script type="text/plain" id="bridge">
+const http = require('http'), PORT = process.env.PORT || 8787, UA = { 'User-Agent': 'Mozilla/5.0' };
+let cookie = '', crumb = '';
+let moomoo = { key: process.env.MOOMOO_KEY || '', secret: process.env.MOOMOO_SECRET || '', host: '127.0.0.1', port: 33333 };
+
+async function auth() {
+  const r = await fetch('https://fc.yahoo.com', { headers: UA, redirect: 'manual' });
+  cookie = (r.headers.getSetCookie?.() || []).map(c => c.split(';')[0]).join('; ');
+  crumb = await (await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', { headers: { ...UA, cookie } })).text();
+}
+async function yf(path) {
+  for (let i = 0; i < 2; i++) {
+    if (!crumb) await auth();
+    const r = await fetch('https://query2.finance.yahoo.com' + path + (path.includes('?') ? '&' : '?') + 'crumb=' + encodeURIComponent(crumb), { headers: { ...UA, cookie } });
+    if (r.ok) return r.json();
+    crumb = '';
+  }
+  throw new Error('Yahoo request failed');
+}
+
+let mm = null, mmReady = false, mmErr = '', subd = new Set(), mmTimer = null;
+// Minimal protobuf reader for InitWebSocket.Response (retType=1, retMsg=2, errCode=3).
+function pbInit(ab) {
+  const u = new Uint8Array(ab), o = {}; let i = 0;
+  const vi = () => { let r = 0n, s = 0n, b; do { b = u[i++]; r |= BigInt(b & 127) << s; s += 7n; } while (b & 128); return r; };
+  while (i < u.length) {
+    const t = Number(vi()), f = t >> 3, w = t & 7;
+    if (w === 0) { const v = vi(); if (f === 1) o.retType = Number(BigInt.asIntN(32, v)); if (f === 3) o.errCode = Number(BigInt.asIntN(32, v)); }
+    else if (w === 2) { const n = Number(vi()); if (f === 2) o.retMsg = Buffer.from(u.subarray(i, i + n)).toString('utf8'); i += n; }
+    else if (w === 1) i += 8; else if (w === 5) i += 4; else break;
+  }
+  return o;
+}
+function mmClose() {
+  clearTimeout(mmTimer);
+  try { if (mm && typeof mm.stop === 'function') mm.stop(); } catch (e) {}
+  mm = null; mmReady = false;
+}
+function mmConnect() {
+  mmClose();
+  let M;
+  try { M = require('moomoo-api'); }
+  catch (e) { mmErr = 'moomoo-api not installed. Run: npm i moomoo-api (in the same folder as server.js)'; return; }
+  try {
+    const C = M.default || M, me = new C();
+    let refusal = null;
+    mm = me; subd.clear(); mmErr = 'connecting';
+    me.onlogin = (ret, msg) => {
+      if (mm !== me) return;
+      clearTimeout(mmTimer);
+      mmReady = !!ret;
+      if (ret) mmErr = '';
+      else if (refusal) mmErr = 'OpenD refused the connection: ' + (refusal.retMsg || 'no message') + ' (code ' + refusal.retType + (refusal.errCode ? '/' + refusal.errCode : '') + '). Check the WebSocket key matches OpenD.';
+      else mmErr = 'OpenD login failed: ' + (msg || 'check WebSocket key (plain text, not the MD5) and port');
+      console.log('[moomoo] login', ret ? 'OK' : 'FAILED', refusal ? JSON.stringify(refusal) : (msg && msg.message || msg || ''));
+    };
+    me.start(moomoo.host, +moomoo.port, false, moomoo.key);
+    // The SDK throws away OpenD's error reply to the init request; read it ourselves so the real reason is shown.
+    const wb = me.websock;
+    if (wb && typeof wb.sendBuff === 'function') {
+      const orig = wb.sendBuff.bind(wb);
+      wb.sendBuff = (cmd, buf, t) => {
+        const p = orig(cmd, buf, t);
+        return cmd !== 1 ? p : p.then(r => { try { if (r && r.buff) { const d = pbInit(r.buff); if (d.retType !== undefined && d.retType !== 0) refusal = d; } } catch (e) {} return r; });
+      };
+    }
+    mmTimer = setTimeout(() => {
+      if (mm === me && !mmReady && mmErr === 'connecting')
+        mmErr = 'No login response from OpenD at ' + moomoo.host + ':' + moomoo.port + ' after 8s. Check OpenD is running, its WebSocket port is enabled, and the key matches.';
+    }, 8000);
+  } catch (e) { mm = null; mmErr = e.message; }
+}
+// A refused/dropped OpenD socket can throw asynchronously inside the SDK; keep the bridge alive and report it.
+process.on('uncaughtException', e => { console.error('[bridge]', e.message); if (mm && !mmReady) mmErr = 'OpenD connection error: ' + e.message; });
+process.on('unhandledRejection', e => { console.error('[bridge]', e && e.message || e); if (mm && !mmReady) mmErr = 'OpenD connection error: ' + (e && e.message || e); });
+const mmQuoteCache = new Map();
+function moomooSecurity(code) {
+  const raw = String(code || '').trim().toUpperCase().replace(/-US$/, '');
+  const m = /^([A-Z.]+)(\d{6}[CP])(\d{8})$/.exec(raw);
+  if (!m) return null;
+  // OpenD option codes use the OCC root/date/type plus strike in thousandths without leading zeroes.
+  return { market: 11, code: m[1] + m[2] + String(Number(m[3])) };
+}
+function basicQuoteFromResponse(resp) {
+  const body = resp && (resp.s2c || resp);
+  const list = body && (body.basicQotList || body.basicQot || body.quoteList);
+  const q = Array.isArray(list) ? list[0] : null;
+  const n = q && Number(q.curPrice != null ? q.curPrice : q.lastPrice);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+async function moomooQuote(code) {
+  const sec = moomooSecurity(code);
+  if (!sec || !mm || !mmReady) return null;
+  try {
+    if (!subd.has(sec.code)) {
+      const sr = await mm.Sub({ c2s: { securityList: [sec], subTypeList: [1], isSubOrUnSub: true, isRegOrUnRegPush: true } });
+      if (sr && sr.retType != null && Number(sr.retType) !== 0) throw new Error(sr.retMsg || 'Moomoo subscription failed');
+      subd.add(sec.code);
+    }
+    const resp = await mm.GetBasicQot({ c2s: { securityList: [sec] } });
+    const last = basicQuoteFromResponse(resp);
+    if (!last) throw new Error('Moomoo returned no valid price for ' + sec.code);
+    const quote = { last, ts: Date.now(), code: sec.code };
+    mmQuoteCache.set(String(code).toUpperCase(), quote);
+    mmErr = '';
+    return quote;
+  } catch (e) {
+    mmErr = e && e.message ? e.message : String(e);
+    const cached = mmQuoteCache.get(String(code).toUpperCase());
+    return cached && Date.now() - cached.ts < 30000 ? { ...cached, cached: true } : null;
+  }
+}
+if (moomoo.key) mmConnect();
+
+const E = encodeURIComponent;
+const routes = {
+  '/api/chain': q => yf(`/v7/finance/options/${E(q.symbol)}` + (q.date ? `?date=${q.date}` : '')),
+  '/api/quote': q => yf(`/v7/finance/quote?symbols=${E(q.symbols)}`),
+  '/api/chart': q => yf(`/v8/finance/chart/${E(q.symbol)}?range=${q.range || '6mo'}&interval=${q.interval || '1d'}`),
+  '/api/moomoo/quote': async q => ({ quote: await moomooQuote(q.code) }),
+  '/api/moomoo/status': async () => ({ configured: !!moomoo.key, connected: mmReady, error: mmErr, host: moomoo.host, port: moomoo.port }),
+};
+
+http.createServer(async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  if (req.method === 'OPTIONS') return res.end();
+  const u = new URL(req.url, 'http://x'), q = Object.fromEntries(u.searchParams);
+  const send = (c, o) => { res.writeHead(c, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
+  try {
+    if (req.method === 'POST' && u.pathname === '/api/moomoo/config') {
+      let b = ''; for await (const c of req) b += c;
+      const c = JSON.parse(b);
+      for (const k of ['key', 'secret', 'host', 'port']) if (c[k] !== undefined && c[k] !== '' && c[k] !== null) moomoo[k] = c[k];
+      mmConnect();
+      return send(200, { ok: true });
+    }
+    const h = routes[u.pathname];
+    if (!h) return send(404, { error: 'not found' });
+    send(200, await h(q));
+  } catch (e) { send(500, { error: e.message }); }
+}).listen(PORT, '127.0.0.1', () => console.log('Bridge on http://127.0.0.1:' + PORT));
+</script>
+
+<script>
+const $ = s => document.querySelector(s);
+let cfg = {
+  bridge: 'http://localhost:8787',
+  uni: 'SPY,QQQ,IWM,AAPL,MSFT,NVDA,TSLA,AMZN,META',
+  fee: 0.69,
+  autoCloseTarget: true,
+  autoCloseStop: true,
+  accountEquity: 20000,
+  riskPct: 0.5,
+  dailyLossPct: 2,
+  maxConsecutiveLosses: 3,
+  maxOpenRiskPct: 1.5,
+  maxSpreadPct: 18,
+  maxQuoteAgeSec: 120,
+  pos: [],
+  closed: [],
+  signals: []
+};
+
+try {
+  const stored = JSON.parse(localStorage.getItem('opt') || '{}');
+  cfg = Object.assign(cfg, stored);
+  if (!Array.isArray(cfg.pos)) cfg.pos = [];
+  if (!Array.isArray(cfg.closed)) cfg.closed = [];
+  if (!Array.isArray(cfg.signals)) cfg.signals = [];
+} catch(e) {}
+
+const save = () => { try { localStorage.setItem('opt', JSON.stringify(cfg)); } catch(e){} };
+
+const api = async (p) => {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
+  try {
+    const r = await fetch(cfg.bridge + p, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+};
+
+let tab = 'picks', mode = 'intraday', tier = 'All', picks = [], msg = '', busy = false, refreshing = false;
+let marketRegime = {name:'Waiting', confidence:0, up:0, down:0, sideways:0, mixed:0, updated:0};
+const oiHistory = JSON.parse(localStorage.getItem('oiHistory') || '{}');
+let openTierFilter = 'All', openSort = 'newest', closedTierFilter = 'All', closedSort = 'newest';
+
+function setTab(t) {
+  tab = t;
+  render();
+  if (t === 'paper') refresh();
+}
+
+function setMode(m) { mode = m; render(); }
+function setTier(t) { tier = t; render(); }
+
+// Converts OCC standard contract code (e.g. IWM261007P00280000) to exact Moomoo Web Strike URL:
+// https://www.moomoo.com/options/IWM261007P280000-US
+function getMoomooUrl(code) {
+  const m = /^([A-Z]+)(\d{6})([CP])(\d{8})$/.exec(code.trim().toUpperCase());
+  if (!m) return `https://www.moomoo.com/options/${code}-US`;
+  const [_, sym, yymmdd, type, strikePadded] = m;
+  const whole = parseInt(strikePadded.slice(0, 5), 10);
+  const frac = strikePadded.slice(5); // 3 decimals
+  const strikeFormatted = frac === '000' ? `${whole}000` : `${whole}${frac}`;
+  const mooSymbol = `${sym}${yymmdd}${type}${strikeFormatted}-US`;
+  return `https://www.moomoo.com/options/${mooSymbol}`;
+}
+
+function openMoomooChart(code) {
+  window.open(getMoomooUrl(code), '_blank');
+}
+
+const N = x => {
+  const t = 1 / (1 + .2316419 * Math.abs(x)),
+        p = .3989423 * Math.exp(-x*x/2) * t * (.3193815 + t*(-.3565638 + t*(1.781478 + t*(-1.821256 + t*1.330274))));
+  return x > 0 ? 1 - p : p;
+};
+
+function greeks(S, K, T, iv, call) {
+  const r = .045, sd = iv * Math.sqrt(T);
+  if (sd <= 0 || T <= 0 || S <= 0 || K <= 0) return { d:0, ga:0, th:0, ve:0 };
+  const d1 = (Math.log(S/K) + (r + iv*iv/2)*T) / sd,
+        d2 = d1 - sd,
+        pdf = .3989423 * Math.exp(-d1*d1/2);
+  return {
+    d: call ? N(d1) : N(d1) - 1,
+    ga: pdf / (S * iv * Math.sqrt(T)),
+    th: (-S * pdf * iv / (2 * Math.sqrt(T)) - (call ? 1 : -1) * r * K * Math.exp(-r*T) * N(call ? d2 : -d2)) / 365,
+    ve: S * pdf * Math.sqrt(T) / 100
+  };
+}
+const emaSeries = (a,n) => { const k=2/(n+1), out=[]; a.forEach((x,i)=>out.push(i?x*k+out[i-1]*(1-k):x)); return out; };
+const ema = (a,n) => emaSeries(a,n).at(-1);
+const rsi = (c,n=14) => { if(c.length<=n)return 50; let g=0,l=0; for(let i=c.length-n;i<c.length;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d;} return l?100-100/(1+g/l):100; };
+const hv = c => { if(c.length<2)return .2; const x=c.slice(-21).map((v,i,a)=>i?Math.log(v/a[i-1]):0).slice(1),m=x.reduce((a,b)=>a+b,0)/x.length; return Math.sqrt(x.reduce((a,b)=>a+(b-m)**2,0)/Math.max(1,x.length-1))*Math.sqrt(252); };
+function intradayMetrics(result){
+  const q=result.indicators.quote[0], c=q.close, h=q.high, l=q.low, v=q.volume;
+  const rows=c.map((x,i)=>({c:x,h:h[i],l:l[i],v:v[i]||0})).filter(x=>[x.c,x.h,x.l].every(Number.isFinite));
+  const C=rows.map(x=>x.c), E9=emaSeries(C,9), E21=emaSeries(C,21); let pv=0,vv=0;
+  rows.forEach(x=>{const tp=(x.h+x.l+x.c)/3;pv+=tp*x.v;vv+=x.v;}); const vwap=vv?pv/vv:C.at(-1);
+  const tr=rows.map((x,i)=>i?Math.max(x.h-x.l,Math.abs(x.h-rows[i-1].c),Math.abs(x.l-rows[i-1].c)):x.h-x.l), atr=tr.slice(-14).reduce((a,b)=>a+b,0)/Math.max(1,tr.slice(-14).length);
+  let plus=0,minus=0,trsum=0; for(let i=Math.max(1,rows.length-14);i<rows.length;i++){const up=rows[i].h-rows[i-1].h,dn=rows[i-1].l-rows[i].l;plus+=up>dn&&up>0?up:0;minus+=dn>up&&dn>0?dn:0;trsum+=tr[i];}
+  const pdi=trsum?100*plus/trsum:0, mdi=trsum?100*minus/trsum:0, adx=(pdi+mdi)?100*Math.abs(pdi-mdi)/(pdi+mdi):0;
+  const w=C.slice(-20), mean=w.reduce((a,b)=>a+b,0)/Math.max(1,w.length), sd=Math.sqrt(w.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1,w.length)); const bbw=mean?4*sd/mean:0;
+  const last=C.at(-1), prev=C.at(-2), avgVol=rows.slice(-21,-1).reduce((a,x)=>a+x.v,0)/Math.max(1,rows.slice(-21,-1).length), relVol=avgVol?rows.at(-1).v/avgVol:0;
+  let pattern='No confirmed pattern';
+  const hi20=Math.max(...rows.slice(-21,-1).map(x=>x.h)), lo20=Math.min(...rows.slice(-21,-1).map(x=>x.l));
+  if(last>hi20&&relVol>=1.3)pattern='20-bar breakout'; else if(last<lo20&&relVol>=1.3)pattern='20-bar breakdown'; else if(prev<vwap&&last>vwap)pattern='VWAP reclaim'; else if(prev>vwap&&last<vwap)pattern='VWAP rejection'; else if(bbw<.012)pattern='Compression';
+  let name='Sideways'; if(last>vwap&&E9.at(-1)>E21.at(-1)&&adx>=18)name='Uptrend'; else if(last<vwap&&E9.at(-1)<E21.at(-1)&&adx>=18)name='Downtrend'; else if(adx>=18)name='Mixed';
+  return {last,vwap,atr,adx,bbw,relVol,pattern,name,e9:E9.at(-1),e21:E21.at(-1)};
+}
+function oiDelta(code,oi){const old=Number(oiHistory[code]?.oi);return Number.isFinite(old)?oi-old:null;}
+function saveOiSnapshot(code,oi){oiHistory[code]={oi:Number(oi)||0,ts:Date.now()};}
+const cl = (x, a=0, z=1) => Math.max(a, Math.min(z, x));
+
+function pick(o, S, T, call, m, b, fs, H, ed, tech) {
+  const iv=o.impliedVolatility,bid=o.bid||0,ask=o.ask||0,mid=(bid+ask)/2,oi=o.openInterest||0,vol=o.volume||0;
+  if(!(ask>0)||mid<.20||oi<100||!(iv>0))return null;
+  const g=greeks(S,o.strike,T,iv,call),sp=(ask-bid)/mid,tg=m==='intraday'?.50:.45,id=m==='intraday',oid=oiDelta(o.contractSymbol,oi),voi=oi?vol/oi:0;
+  if(sp>cfg.maxSpreadPct/100||bid<=0)return null;
+  const expectedFill=bid+.65*(ask-bid), quoteAge=o.lastTradeDate?Math.max(0,(Date.now()/1000-o.lastTradeDate)):null;
+  const trendFit=(call&&tech.name==='Uptrend')||(!call&&tech.name==='Downtrend')?1:tech.name==='Sideways'?.45:.2;
+  const patternFit=/breakout|reclaim/.test(tech.pattern)&&call||/breakdown|rejection/.test(tech.pattern)&&!call?1:/Compression/.test(tech.pattern)?.55:.25;
+  let score=18*cl(Math.abs(b)/85)+13*cl(1-Math.abs(Math.abs(g.d)-tg)/.3)+14*cl(1-sp/.12)+8*cl(vol/500)+6*cl(oi/1500)+6*cl(voi/.5)+7*cl(1.3-iv/(H||.2))+7*cl(1-Math.abs(g.th)/mid/(id?.35:.15))+6*cl(g.ve/(mid*.25))+8*trendFit+7*patternFit+5*fs;
+  score-=ed<(id?1:10)?8:0; score=Math.round(cl(score,0,100));
+  const tier=score>=75?'Strict':score>=60?'Balanced':score>=45?'Aggressive':null;
+  saveOiSnapshot(o.contractSymbol,oi);
+  return tier&&{code:o.contractSymbol,k:o.strike,bid,ask,mid,iv,d:g.d,ga:g.ga,th:g.th,ve:g.ve,oi,oiChg:oid,v:vol,voi,spread:sp,score,tier,earn:ed<(id?1:10),stop:mid*(id?.70:.60),tgt:mid*(id?1.40:1.80),regime:tech.name,pattern:tech.pattern,vwap:tech.vwap,adx:tech.adx,atr:tech.atr,relVol:tech.relVol,expectedFill,quoteAge,underlying:tech.last,underlyingStop:call?tech.vwap-Math.min(tech.atr*.25,Math.abs(tech.last-tech.vwap)) : tech.vwap+Math.min(tech.atr*.25,Math.abs(tech.last-tech.vwap))};
+}
+async function analyze(sym) {
+  const E=encodeURIComponent(sym);
+  const [daily,intra,qt,c0]=await Promise.all([api('/api/chart?symbol='+E+'&range=6mo&interval=1d'),api('/api/chart?symbol='+E+'&range=5d&interval=5m'),api('/api/quote?symbols='+E),api('/api/chain?symbol='+E)]);
+  const dc=daily.chart.result[0].indicators.quote[0].close.filter(Number.isFinite),q=qt.quoteResponse.result[0]||{},S=dc.at(-1),tech=intradayMetrics(intra.chart.result[0]);
+  const e20=ema(dc,20),e50=ema(dc,50),R=rsi(dc),H=hv(dc),chg=q.regularMarketChangePercent||0;
+  let b=(S>e20?15:-15)+(e20>e50?20:-20)+(S>e50?10:-10)+(R>55?10:R<45?-10:0)+(chg>.3?10:chg<-.3?-10:0);
+  b+=(tech.name==='Uptrend'?25:tech.name==='Downtrend'?-25:0)+(tech.last>tech.vwap?10:-10);
+  if(tech.name==='Sideways'&&/No confirmed/.test(tech.pattern))return {picks:[],regime:{...tech,sym}};
+  if(Math.abs(b)<20)return {picks:[],regime:{...tech,sym}};
+  const call=b>0,etf=q.quoteType==='ETF'||sym[0]==='^'; let f=5;
+  if(!etf){const ar=parseFloat(q.averageAnalystRating)||3;f+=ar<2.2?3:ar>3?-3:0;if(q.forwardPE&&q.trailingPE&&q.forwardPE<q.trailingPE)f+=2;}
+  const ed=q.earningsTimestamp?(q.earningsTimestamp*1000-Date.now())/864e5:99,fs=(call?f:10-f)/10,dte=e=>(e*1000+864e5-Date.now())/864e5,ex=c0.optionChain.result[0].expirationDates,out=[];
+  for(const m of ['intraday','swing']){const e=ex.find(e=>m==='intraday'?dte(e)>0&&dte(e)<=3:dte(e)>=5&&dte(e)<=14);if(!e)continue;const res=(await api(`/api/chain?symbol=${E}&date=${e}`)).optionChain.result[0],op=res.options[0],S2=res.quote.regularMarketPrice||S;out.push(...(call?op.calls:op.puts).map(o=>pick(o,S2,Math.max(dte(e),.05)/365,call,m,b,fs,H,ed,tech)).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3).map(p=>({...p,sym,m,call,exp:e,b:Math.round(b),R:Math.round(R)})));}
+  return {picks:out,regime:{...tech,sym}};
+}
+function updateMarketRegime(regimes){const counts={Uptrend:0,Downtrend:0,Sideways:0,Mixed:0};regimes.forEach(r=>{if(r&&counts[r.name]!==undefined)counts[r.name]++;});const bench=regimes.filter(r=>['SPY','QQQ','IWM'].includes(r.sym)), source=bench.length?bench:regimes, bc={Uptrend:0,Downtrend:0,Sideways:0,Mixed:0};source.forEach(r=>{if(r&&bc[r.name]!==undefined)bc[r.name]++;});const top=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0],total=Math.max(1,source.length);marketRegime={name:top[1]?top[0]:'Waiting',confidence:Math.round(100*top[1]/total),up:counts.Uptrend,down:counts.Downtrend,sideways:counts.Sideways,mixed:counts.Mixed,updated:Date.now(),basis:bench.length?'SPY/QQQ/IWM':'watchlist'};}
+async function scan() {
+  if (busy) return;
+  busy = true;
+  picks = [];
+  msg = 'Connecting to bridge...';
+  render();
+  const regimes = [];
+  for (const s of cfg.uni.split(',').map(s => s.trim()).filter(Boolean)) {
+    msg = 'Scanning ' + s + '…';
+    render();
+    try {
+      const result = await analyze(s);
+      picks.push(...result.picks);
+      regimes.push(result.regime);
+    } catch(e) {
+      console.warn('Bridge check for ' + s + ':', e.message);
+    }
+  }
+  updateMarketRegime(regimes);
+  cfg.signals.push(...picks.map(p=>({at:Date.now(),sym:p.sym,code:p.code,score:p.score,tier:p.tier,regime:p.regime,pattern:p.pattern,mid:p.mid,spread:p.spread,status:'qualified'}))); cfg.signals=cfg.signals.slice(-3000); save();
+  localStorage.setItem('oiHistory', JSON.stringify(oiHistory));
+  busy = false;
+  msg = picks.length ? ('Synced: ' + new Date().toLocaleTimeString()) : 'Bridge offline or zero strikes returned';
+  render();
+}
+
+const dt = e => new Date(e * 1000).toISOString().slice(5, 10),
+      lbl = p => `${p.sym} ${dt(p.exp)} ${p.k}${p.call ? 'C' : 'P'}`;
+
+function tradingDayKey(ts=Date.now()){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(ts));}
+function riskState(){
+  const day=tradingDayKey(), today=cfg.closed.filter(x=>tradingDayKey(x.closedAt||0)===day), realized=today.reduce((a,x)=>a+(Number(x.realizedPL)||0),0);
+  let consecutive=0; for(const x of [...cfg.closed].sort((a,b)=>(b.closedAt||0)-(a.closedAt||0))){if((Number(x.realizedPL)||0)<0)consecutive++;else break;}
+  const openRisk=cfg.pos.reduce((a,x)=>a+Math.max(0,(Number(x.entry)-Number(x.stop))*100*(Number(x.qty)||1)),0);
+  const dailyLimit=cfg.accountEquity*cfg.dailyLossPct/100, openLimit=cfg.accountEquity*cfg.maxOpenRiskPct/100;
+  const reasons=[]; if(realized<=-dailyLimit)reasons.push('Daily loss limit reached'); if(consecutive>=cfg.maxConsecutiveLosses)reasons.push(cfg.maxConsecutiveLosses+' consecutive losses'); if(openRisk>=openLimit)reasons.push('Maximum open risk reached');
+  return {realized,consecutive,openRisk,dailyLimit,openLimit,locked:reasons.length>0,reasons};
+}
+function recommendedQty(p){const budget=cfg.accountEquity*cfg.riskPct/100, unit=Math.max(.01,(Number(p.mid)-Number(p.stop))*100+2*cfg.fee);return Math.max(0,Math.floor(budget/unit));}
+function sessionWindow(){const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).filter(x=>x.type!=='literal').map(x=>[x.type,+x.value]));const m=parts.hour*60+parts.minute;if(m<570||m>=960)return 'Market closed';if(m<575)return 'Observation only';if(m<630)return 'Opening trend window';if(m<690)return 'Pullback window';if(m<810)return 'Midday low liquidity';if(m<900)return 'Afternoon confirmation';if(m<945)return 'Closing momentum';return 'No new entries';}
+function riskPanel(){const r=riskState(),remaining=Math.max(0,r.dailyLimit+r.realized);return `<div class="risk-grid"><div class="risk-card ${r.locked?'risk-lock':'risk-ok'}"><div class="k">Risk governor</div><div class="v ${r.locked?'r':'g'}">${r.locked?'LOCKED':'ACTIVE'}</div></div><div class="risk-card"><div class="k">Today net P&L</div><div class="v ${r.realized>=0?'g':'r'}">$${r.realized.toFixed(2)}</div></div><div class="risk-card"><div class="k">Daily risk remaining</div><div class="v">$${remaining.toFixed(2)}</div></div><div class="risk-card"><div class="k">Open risk</div><div class="v">$${r.openRisk.toFixed(2)} / $${r.openLimit.toFixed(2)}</div></div><div class="risk-card"><div class="k">Consecutive losses</div><div class="v">${r.consecutive} / ${cfg.maxConsecutiveLosses}</div></div><div class="risk-card"><div class="k">Session</div><div class="v" style="font-size:12px">${sessionWindow()}</div></div></div>${r.locked?`<div class="warning-box"><b>New paper trades blocked:</b> ${r.reasons.join(' · ')}</div>`:''}`;}
+
+function rPicks() {
+  const L = picks.filter(p => p.m === mode && (tier === 'All' || p.tier === tier)).sort((a,b) => b.score - a.score);
+  return `
+  ${riskPanel()}
+  <div class="regime-banner"><div><div class="regime-title">Market Regime now</div><div class="regime-value regime-${marketRegime.name}">${marketRegime.name}${marketRegime.confidence?' · '+marketRegime.confidence+'%':''}</div></div><div class="regime-meta">Broad basis: ${marketRegime.basis||'watchlist'} · Universe: ↑ ${marketRegime.up} · ↓ ${marketRegime.down} · ↔ ${marketRegime.sideways} · Mixed ${marketRegime.mixed}<br>${marketRegime.updated?'Updated '+new Date(marketRegime.updated).toLocaleTimeString():'Run scanner to classify'}</div></div>
+  <div class="row" style="justify-content: space-between;">
+    <div class="row" style="margin:0">
+      ${[['intraday','Intraday (0-3 DTE)'],['swing','Swing (5-14 DTE)']].map(([m,t])=>`<button class="btn ${mode===m?'on':''}" onclick="setMode('${m}')">${t}</button>`).join('')}
+      <span class="mu" style="margin-left:8px;">Tier:</span>
+      ${['All','Strict','Balanced','Aggressive'].map(t=>`<button class="btn ${tier===t?'on':''}" onclick="setTier('${t}')">${t}</button>`).join('')}
+    </div>
+    <div class="row" style="margin:0">
+      <button class="btn pri" onclick="scan()">⚡ Scan Scanner</button>
+      <span class="mu mono" style="font-size:11px;">${msg}</span>
+    </div>
+  </div>
+  <div class="wrap"><table>
+    <thead>
+      <tr>
+        <th>Underlying & Strike</th>
+        <th>Mid</th>
+        <th>Bid / Ask</th>
+        <th>Delta / Gamma</th>
+        <th>Theta / Vega</th>
+        <th>IV / Spread</th>
+        <th>OI Δ / Vol</th>
+        <th>Regime / Pattern</th>
+        <th>Setup Tier</th>
+        <th>Stop → Target</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${L.map(p=>`<tr>
+        <td>
+          <div class="sym-name">${lbl(p)}</div>
+          <div class="sym-sub">${p.call?'LONG CALL':'LONG PUT'} ${p.earn?'• <span class="r">EARNINGS</span>':''}</div>
+        </td>
+        <td class="mono font-weight-bold">${p.mid.toFixed(2)}</td>
+        <td class="mono mu">${p.bid.toFixed(2)} /${p.ask.toFixed(2)}</td>
+        <td class="mono">${p.d.toFixed(2)} / ${p.ga.toFixed(3)}</td>
+        <td class="mono"><span class="r">${p.th.toFixed(2)}</span> / ${p.ve.toFixed(2)}</td>
+        <td class="mono">${(p.iv*100).toFixed(0)}% / ${(p.spread*100).toFixed(0)}%</td>
+        <td class="mono mu">${p.oi} ${p.oiChg==null?'Δ --':'Δ '+(p.oiChg>=0?'+':'')+p.oiChg} / ${p.v}</td>
+        <td><div class="mono">${p.regime} · ADX ${p.adx.toFixed(0)}</div><div class="sym-sub">${p.pattern} · RVOL ${p.relVol.toFixed(1)}x</div></td>
+        <td><span class="tag ${p.tier}">${p.tier}${p.score}</span></td>
+        <td class="mono"><span class="r">${p.stop.toFixed(2)}</span> → <span class="g">${p.tgt.toFixed(2)}</span><div class="sym-sub">Qty ${recommendedQty(p)} · Est fill $${p.expectedFill.toFixed(2)} · U-stop $${p.underlyingStop.toFixed(2)}</div></td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn sm pri" onclick="add('${p.code}')">+ Paper</button>
+            <button class="btn sm" title="View exact strike chart on Moomoo" onclick="openMoomooChart('${p.code}')">Chart ↗</button>
+          </div>
+        </td>
+      </tr>`).join('') || `<tr><td colspan="11" class="mu" style="text-align:center; padding:32px;">${busy ? 'Analyzing option chains...' : 'Ready to scan. Start the local bridge and click <b>⚡ Scan Scanner</b>.'}</td></tr>`}
+    </tbody>
+  </table></div>`;
+}
+
+let refreshQueued = false;
+const roundPrice = v => Math.round((Number(v) || 0) * 100) / 100;
+
+function add(code) {
+  const p = picks.find(x => x.code === code); if (!p) return;
+  const risk=riskState(), qty=recommendedQty(p), session=sessionWindow();
+  if(risk.locked){alert('Trade blocked by risk governor: '+risk.reasons.join(', '));return;}
+  if(qty<1){alert('Trade blocked: configured risk budget is smaller than one contract risk.');return;}
+  if(session==='Observation only'||session==='No new entries'||session==='Market closed'){if(!confirm('Session filter: '+session+'. Add to paper trading anyway?'))return;}
+  const now=Date.now(),initPrice=roundPrice(p.expectedFill||p.mid),stopRatio=p.mid>0?p.stop/p.mid:.70,tgtRatio=p.mid>0?p.tgt/p.mid:1.4;
+  cfg.pos.push({id:now,sym:p.sym,code,k:p.k,call:p.call,exp:p.exp,qty,entry:initPrice,live:initPrice,stop:roundPrice(initPrice*stopRatio),tgt:roundPrice(initPrice*tgtRatio),stopRatio,tgtRatio,openedAt:now,tier:p.tier,score:p.score,src:'Expected limit fill',ts:now,entrySynced:false,manualEntry:false,manualStop:false,manualTgt:false,underlyingEntry:p.underlying,underlyingStop:p.underlyingStop,vwap:p.vwap,atr:p.atr,regime:p.regime,pattern:p.pattern,expectedFill:p.expectedFill,maxHoldBars:5,quoteAgeAtSignal:p.quoteAge});
+  cfg.signals.push({at:now,sym:p.sym,code:p.code,status:'paper-opened',qty,entry:initPrice,stop:p.stop,tgt:p.tgt,regime:p.regime,pattern:p.pattern});save();setTab('paper');
+}
+
+function ed(i, k, v) {
+  const pos = cfg.pos[i];
+  if (!pos) return;
+  pos[k] = Math.max(0, +v);
+  if (k === 'entry') {
+    pos.manualEntry = true;
+    pos.entrySynced = true;
+  } else if (k === 'stop') {
+    pos.manualStop = true;
+  } else if (k === 'tgt') {
+    pos.manualTgt = true;
+  }
+  save();
+  render();
+}
+
+function applyQuoteToPosition(p, rawPrice, src, quoteTs) {
+  const price = roundPrice(rawPrice);
+  if (!(price > 0)) return false;
+
+  // First quote at the time of adding to Paper Trading:
+  // Lock both entry and live to the current price so pre-add movement is excluded.
+  if (p.entrySynced === false && !p.manualEntry) {
+    p.entry = price;
+    p.live = price;
+    if (!p.manualStop) p.stop = roundPrice(price * (p.stopRatio || 0.65));
+    if (!p.manualTgt) p.tgt = roundPrice(price * (p.tgtRatio || 1.5));
+    p.entrySynced = true;
+    p.entrySyncedAt = Date.now();
+    p.src = src;
+    p.ts = quoteTs || Date.now();
+    p.quoteError = '';
+    return false; // Baseline sync only; do not trigger auto-close on initial anchor
+  }
+
+  p.entrySynced = true;
+  p.live = price;
+  p.src = src;
+  p.ts = quoteTs || Date.now();
+  p.quoteError = '';
+  return true;
+}
+
+function targetProgress(p) {
+  const entry = Number(p.entry), live = Number(p.live), target = Number(p.tgt);
+  if (!(entry > 0) || !(live > 0) || !(target > entry)) {
+    return `<div class="target-progress"><span class="mu">Unavailable</span><div class="progress-meta"><span>Entry/target invalid</span></div></div>`;
+  }
+  const raw = ((live - entry) / (target - entry)) * 100;
+  const pct = Math.max(0, Math.min(100, raw));
+  const remaining = Math.max(0, target - live);
+  let cls = 'target-loss', color = 'var(--red)', state = 'Below entry';
+  if (live >= target) { cls = 'reached'; color = 'var(--green)'; state = 'Target reached'; }
+  else if (raw >= 80) { cls = 'target-high'; color = 'var(--green)'; state = `$${remaining.toFixed(2)} remaining`; }
+  else if (raw >= 50) { cls = 'target-mid'; color = 'var(--blue)'; state = `$${remaining.toFixed(2)} remaining`; }
+  else if (raw >= 0) { cls = 'target-low'; color = 'var(--amber)'; state = `$${remaining.toFixed(2)} remaining`; }
+  return `<div class="target-progress" title="Entry $${entry.toFixed(2)} · Live $${live.toFixed(2)} · Target $${target.toFixed(2)}">
+    <div class="progress-meta"><span class="progress-label" style="color:${color}"><span class="progress-dot"></span>${raw.toFixed(0)}%</span><span>${state}</span></div>
+    <div class="progress-track"><div class="progress-fill ${cls}" style="width:${pct.toFixed(1)}%"></div></div>
+    <div class="progress-meta"><span>Entry $${entry.toFixed(2)}</span><span>Target $${target.toFixed(2)}</span></div>
+  </div>`;
+}
+function stopLossProgress(p) {
+  const entry = Number(p.entry), live = Number(p.live), stop = Number(p.stop);
+  if (!(entry > 0) || !(live > 0) || !(stop >= 0) || !(entry > stop)) {
+    return `<div class="target-progress"><span class="mu">Unavailable</span><div class="progress-meta"><span>Entry/stop invalid</span></div></div>`;
+  }
+  const buffer = entry - stop;
+  const remaining = live - stop;
+  const safetyRaw = (remaining / buffer) * 100;
+  const pct = Math.max(0, Math.min(100, safetyRaw));
+  let cls = 'stop-safe', color = 'var(--green)', state = `$${Math.max(0,remaining).toFixed(2)} above stop`;
+  if (live <= stop) { cls = 'stop-hit'; color = 'var(--red)'; state = 'Stop reached'; }
+  else if (safetyRaw <= 25) { cls = 'stop-danger'; color = 'var(--red)'; state = `$${remaining.toFixed(2)} above stop`; }
+  else if (safetyRaw <= 60) { cls = 'stop-warn'; color = 'var(--amber)'; state = `$${remaining.toFixed(2)} above stop`; }
+  return `<div class="target-progress" title="Stop $${stop.toFixed(2)} · Live $${live.toFixed(2)} · Entry $${entry.toFixed(2)}">
+    <div class="progress-meta"><span class="progress-label" style="color:${color}"><span class="progress-dot"></span>${safetyRaw.toFixed(0)}% safety</span><span>${state}</span></div>
+    <div class="progress-track"><div class="progress-fill ${cls}" style="width:${pct.toFixed(1)}%"></div></div>
+    <div class="progress-meta"><span>Stop $${stop.toFixed(2)}</span><span>Entry $${entry.toFixed(2)}</span></div>
+  </div>`;
+}
+function csvCell(v) {
+  const text = v == null ? '' : String(v);
+  return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+}
+function exportCloseReasonsCSV() {
+  if (!cfg.closed.length) { alert('No closed positions to export.'); return; }
+  const headers = ['Contract','Symbol','Expiry','Type','Strike','Setup Tier','Setup Score','Opened Time','Quantity','Entry Price','Exit Price','Target At Close','Stop Loss','Close Reason','Auto Closed','Close Evidence','Quote Source','Quote Time','Closed Time','Realized P&L','Fees'];
+  const rows = cfg.closed.map(p => {
+    const exit = Number(p.exitPrice), target = Number(p.targetAtClose != null ? p.targetAtClose : p.tgt);
+    const auto = String(p.closeReason || '').startsWith('Auto-close');
+    const evidence = auto && Number.isFinite(exit) && Number.isFinite(target)
+      ? `Live $${exit.toFixed(2)} >= Target $${target.toFixed(2)}; difference $${(exit-target).toFixed(2)}`
+      : `Closed at $${Number.isFinite(exit) ? exit.toFixed(2) : '--'}`;
+    return [p.code,p.sym,p.exp,p.type,p.strike,normalizedTier(p),p.score,p.openedAt ? new Date(Number(p.openedAt)).toISOString() : '',p.qty,p.entry,p.exitPrice,target,p.stop,p.closeReason || 'Manual close',auto ? 'Yes' : 'No',evidence,p.quoteSourceAtClose || p.src || '',p.quoteTimeAtClose || p.ts ? new Date(Number(p.quoteTimeAtClose || p.ts)).toISOString() : '',p.closedAt ? new Date(Number(p.closedAt)).toISOString() : '',p.realizedPL,p.feeTotal];
+  });
+  const csv = '\uFEFF' + [headers,...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = `paper-trading-close-reasons-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function closeExplanation(p) {
+  const auto = String(p.closeReason || '').startsWith('Auto-close');
+  const exit = Number(p.exitPrice), target = Number(p.targetAtClose != null ? p.targetAtClose : p.tgt);
+  const source = p.quoteSourceAtClose || p.src || 'Unknown source';
+  const quoteTime = Number(p.quoteTimeAtClose || p.ts);
+  if (auto) {
+    const over = Number.isFinite(exit) && Number.isFinite(target) ? exit - target : NaN;
+    return `<div class="close-why">
+      <div class="reason">Target condition was met</div>
+      <div>Live $${Number.isFinite(exit) ? exit.toFixed(2) : '--'} ≥ Target $${Number.isFinite(target) ? target.toFixed(2) : '--'}</div>
+      <div class="evidence">${Number.isFinite(over) ? `Triggered $${Math.max(0,over).toFixed(2)} at/above target · ` : ''}${source}${quoteTime ? ` · Quote ${new Date(quoteTime).toLocaleTimeString()}` : ''}</div>
+    </div>`;
+  }
+  return `<div class="close-why"><div class="reason">${p.closeReason || 'Manual close'}</div><div class="evidence">Closed at $${Number.isFinite(exit) ? exit.toFixed(2) : '--'}${source ? ` · ${source}` : ''}</div></div>`;
+}
+
+function closePos(i, reason = 'Manual close') {
+  const p = cfg.pos[i];
+  if (!p) return;
+  const feeTotal = 2 * cfg.fee * p.qty;
+  const realizedPL = (p.live - p.entry) * 100 * p.qty - feeTotal;
+  cfg.closed.push({
+    ...p,
+    exitPrice: p.live,
+    realizedPL,
+    feeTotal,
+    closedAt: Date.now(),
+    closeReason: reason,
+    targetAtClose: Number(p.tgt),
+    quoteSourceAtClose: p.src || 'Unknown source',
+    quoteTimeAtClose: Number(p.ts) || Date.now(),
+    targetDifferenceAtClose: Number(p.live) - Number(p.tgt)
+  });
+  cfg.signals.push({at:Date.now(),sym:p.sym,code:p.code,status:'closed',reason,entry:p.entry,exit:p.live,pnl:realizedPL});
+  cfg.pos.splice(i, 1);
+  save();
+  render();
+}
+
+function normalizedTier(p) {
+  const raw = String(p && p.tier || '').trim().toLowerCase();
+  if (raw.startsWith('strict')) return 'Strict';
+  if (raw.startsWith('balanc')) return 'Balanced';
+  if (raw.startsWith('aggress')) return 'Aggressive';
+  return '';
+}
+function setupTierTag(p) {
+  const tierName = normalizedTier(p);
+  const score = Number(p && p.score);
+  if (!tierName) return '<span class="mu">Not captured</span>';
+  return `<span class="tag ${tierName}">${tierName}${Number.isFinite(score) ? score : ''}</span>`;
+}
+function tradeDateTime(value) {
+  const ms = Number(value);
+  if (!Number.isFinite(ms) || ms <= 0) return '<span class="mu">Not captured</span>';
+  const d = new Date(ms);
+  if (Number.isNaN(d.getTime())) return '<span class="mu">Not captured</span>';
+  return `<div class="trade-datetime"><div class="date">${d.toLocaleDateString()}</div><div class="time">${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div></div>`;
+}
+
+function paperTierMatch(p, selected) {
+  return selected === 'All' || normalizedTier(p) === selected;
+}
+function paperPL(p, closed = false) {
+  if (closed) return Number.isFinite(Number(p.realizedPL)) ? Number(p.realizedPL) : 0;
+  return (Number(p.live) - Number(p.entry)) * 100 * Number(p.qty || 0) - (2 * Number(cfg.fee || 0) * Number(p.qty || 0));
+}
+function paperSortRows(rows, sort, closed = false) {
+  return rows.sort((a,b) => {
+    if (sort === 'lowest') return paperPL(a.p, closed) - paperPL(b.p, closed);
+    const aTime = Number(closed ? a.p.closedAt : (a.p.openedAt || a.p.id)) || 0;
+    const bTime = Number(closed ? b.p.closedAt : (b.p.openedAt || b.p.id)) || 0;
+    return bTime - aTime;
+  });
+}
+function setPaperFilter(kind, value) {
+  if (kind === 'openTier') openTierFilter = value;
+  if (kind === 'openSort') openSort = value;
+  if (kind === 'closedTier') closedTierFilter = value;
+  if (kind === 'closedSort') closedSort = value;
+  render();
+}
+
+function rPaper() {
+  let activeTot = 0, closedTot = 0, totalFees = 0;
+
+  const openView = paperSortRows(cfg.pos.map((p,i) => ({p,i})).filter(x => paperTierMatch(x.p, openTierFilter)), openSort, false);
+  const activeRows = openView.map(({p, i}) => {
+    const fee = 2 * cfg.fee * p.qty;
+    const pl = (p.live - p.entry) * 100 * p.qty - fee;
+    activeTot += pl;
+    totalFees += fee;
+    return `<tr>
+      <td>
+        <div class="sym-name">${lbl(p)}</div>
+        <div class="sym-sub mono">${p.code}</div>
+      </td>
+      <td>${setupTierTag(p)}</td>
+      <td>${tradeDateTime(p.openedAt || p.id)}</td>
+      <td><input type="number" min="1" value="${p.qty}" onchange="ed(${i},'qty',this.value)"></td>
+      <td><input type="number" step="0.01" value="${p.entry}" onchange="ed(${i},'entry',this.value)"></td>
+      <td>
+        <input type="number" step="0.01" title="Stop Loss" value="${p.stop || (p.entry * 0.65).toFixed(2)}" onchange="ed(${i},'stop',this.value)">
+        <span class="mu">→</span>
+        <input type="number" step="0.01" title="Target" value="${p.tgt || (p.entry * 1.5).toFixed(2)}" onchange="ed(${i},'tgt',this.value)">
+      </td>
+      <td>${targetProgress(p)}</td>
+      <td>${stopLossProgress(p)}</td>
+      <td class="mono">
+        ${p.live.toFixed(2)}
+        <span class="mu" style="font-size:10px;">${p.src ? `[${p.src}]` : ''}</span>
+      </td>
+      <td class="mono ${pl >= 0 ? 'g' : 'r'} font-weight-bold">${pl >= 0 ? '+' : ''}${pl.toFixed(2)}</td>
+      <td class="mono mu">${fee.toFixed(2)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn sm pri" title="Close at live market price" onclick="closePos(${i},'Manual close')">Close</button>
+          <button class="btn sm" title="View exact strike chart on Moomoo" onclick="openMoomooChart('${p.code}')">Chart ↗</button>
+          <button class="btn sm danger" title="Delete without logging" onclick="cfg.pos.splice(${i},1);save();render()">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const closedView = paperSortRows(cfg.closed.map((p,i) => ({p,i})).filter(x => paperTierMatch(x.p, closedTierFilter)), closedSort, true);
+  const closedRows = closedView.map(({p, i}) => {
+    const fee = p.feeTotal != null ? p.feeTotal : (2 * cfg.fee * p.qty);
+    const pl = p.realizedPL;
+    closedTot += pl;
+    totalFees += fee;
+    return `<tr>
+      <td>
+        <div class="sym-name">${lbl(p)}</div>
+        <div class="sym-sub mono">${p.code}</div>
+      </td>
+      <td>${setupTierTag(p)}</td>
+      <td>${tradeDateTime(p.openedAt || p.id)}</td>
+      <td>${tradeDateTime(p.closedAt)}</td>
+      <td class="mono">${p.qty}</td>
+      <td class="mono">${p.entry.toFixed(2)}</td>
+      <td class="mono">
+        Exit: <b>${p.exitPrice.toFixed(2)}</b>
+        <span class="mu" style="font-size:11px;">(SL: ${p.stop||'--'} | TP: ${p.tgt||'--'})</span>
+        <div class="sym-sub">${p.closeReason || 'Manual close'}</div>
+      </td>
+      <td>${closeExplanation(p)}</td>
+      <td class="mono ${pl >= 0 ? 'g' : 'r'} font-weight-bold">${pl >= 0 ? '+' : ''}${pl.toFixed(2)}</td>
+      <td class="mono mu">${fee.toFixed(2)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn sm" title="View Moomoo chart" onclick="openMoomooChart('${p.code}')">Chart ↗</button>
+          <button class="btn sm danger" title="Delete record" onclick="cfg.closed.splice(${i},1);save();render()">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const grandTot = activeTot + closedTot;
+
+  return `
+  <div class="kpi-deck">
+    <div class="kpi-card">
+      <div class="kpi-label">Combined Net P&amp;L</div>
+      <div class="kpi-val ${grandTot >= 0 ? 'g' : 'r'}">${grandTot >= 0 ? '+' : ''}$${grandTot.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Active Unrealized</div>
+      <div class="kpi-val ${activeTot >= 0 ? 'g' : 'r'}">${activeTot >= 0 ? '+' : ''}$${activeTot.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Closed Realized</div>
+      <div class="kpi-val ${closedTot >= 0 ? 'g' : 'r'}">${closedTot >= 0 ? '+' : ''}$${closedTot.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Moomoo Total Fees (Roundtrip)</div>
+      <div class="kpi-val mu">$${totalFees.toFixed(2)}</div>
+    </div>
+  </div>
+
+  <div class="row" style="justify-content: space-between;">
+    <div class="mu font-weight-bold">OPEN POSITIONS (${openView.length} of ${cfg.pos.length})</div>
+    <div class="row" style="margin:0">
+      <span class="paper-filter-label">Tier</span>
+      <select class="paper-filter" aria-label="Filter open positions by setup tier" onchange="setPaperFilter('openTier',this.value)">
+        ${['All','Strict','Balanced','Aggressive'].map(x => `<option value="${x}" ${openTierFilter===x?'selected':''}>${x === 'All' ? 'All setup tiers' : x}</option>`).join('')}
+      </select>
+      <span class="paper-filter-label">Show</span>
+      <select class="paper-filter" aria-label="Sort open positions" onchange="setPaperFilter('openSort',this.value)">
+        <option value="newest" ${openSort==='newest'?'selected':''}>Newest first</option>
+        <option value="lowest" ${openSort==='lowest'?'selected':''}>Lowest P&amp;L first</option>
+      </select>
+      <span class="${cfg.autoCloseTarget ? 'auto-badge' : 'mu'}">Auto-close at target: ${cfg.autoCloseTarget ? 'ON' : 'OFF'}</span>
+      <button class="btn sm ${cfg.autoCloseTarget ? 'warn' : 'pri'}" onclick="cfg.autoCloseTarget=!cfg.autoCloseTarget;save();render()">${cfg.autoCloseTarget ? 'Disable' : 'Enable'}</button>
+      <button class="btn sm" onclick="refresh(true)">Refresh live prices</button>
+    </div>
+  </div>
+  <div class="wrap"><table>
+    <thead>
+      <tr>
+        <th>Contract</th>
+        <th>Setup Tier</th>
+        <th>Opened Date &amp; Time</th>
+        <th>Qty</th>
+        <th>Entry ($)</th>
+        <th>Stop Loss → Target</th>
+        <th>Target Progress</th>
+        <th>Stop-Loss Progress</th>
+        <th>Live Price</th>
+        <th>Net P&amp;L</th>
+        <th>Fees</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${activeRows || '<tr><td colspan="12" class="mu" style="text-align:center; padding:24px;">No open positions match the selected setup tier.</td></tr>'}
+    </tbody>
+  </table></div>
+
+  ${cfg.closed.length ? `
+  <div class="row" style="justify-content: space-between; margin-top: 24px;">
+    <div class="mu font-weight-bold">CLOSED POSITIONS RECORD (${closedView.length} of ${cfg.closed.length})</div>
+    <div class="row" style="margin:0">
+      <span class="paper-filter-label">Tier</span>
+      <select class="paper-filter" aria-label="Filter closed positions by setup tier" onchange="setPaperFilter('closedTier',this.value)">
+        ${['All','Strict','Balanced','Aggressive'].map(x => `<option value="${x}" ${closedTierFilter===x?'selected':''}>${x === 'All' ? 'All setup tiers' : x}</option>`).join('')}
+      </select>
+      <span class="paper-filter-label">Show</span>
+      <select class="paper-filter" aria-label="Sort closed positions" onchange="setPaperFilter('closedSort',this.value)">
+        <option value="newest" ${closedSort==='newest'?'selected':''}>Newest first</option>
+        <option value="lowest" ${closedSort==='lowest'?'selected':''}>Lowest P&amp;L first</option>
+      </select>
+      <button class="btn sm pri" onclick="exportCloseReasonsCSV()">Export Close Reasons CSV</button>
+      <button class="btn sm danger" onclick="if(confirm('Clear all closed trades?')){cfg.closed=[];save();render();}">Clear Closed Trades</button>
+    </div>
+  </div>
+  <div class="wrap"><table>
+    <thead>
+      <tr>
+        <th>Contract</th>
+        <th>Setup Tier</th>
+        <th>Opened Date &amp; Time</th>
+        <th>Closed Date &amp; Time</th>
+        <th>Qty</th>
+        <th>Entry</th>
+        <th>Exit &amp; Target Setup</th>
+        <th>Why Closed</th>
+        <th>Realized P&amp;L</th>
+        <th>Fees Paid</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${closedRows || '<tr><td colspan="11" class="mu" style="text-align:center;padding:24px;">No closed positions match the selected setup tier.</td></tr>'}
+    </tbody>
+  </table></div>` : ''}`;
+}
+
+async function refresh(manual = false) {
+  if (!cfg.pos.length) return;
+  if (refreshing) {
+    refreshQueued = true;
+    return;
+  }
+  refreshing = true;
+
+  try {
+    const snapshot = [...cfg.pos];
+    const moomooResults = await Promise.all(snapshot.map(async p => {
+      try {
+        const data = await api('/api/moomoo/quote?code=' + encodeURIComponent(p.code));
+        const q = data && data.quote;
+        return q && Number(q.last) > 0
+          ? { p, price: Number(q.last), ts: Number(q.ts) || Date.now(), cached: !!q.cached }
+          : null;
+      } catch (e) { return null; }
+    }));
+
+    const gotMoomoo = new Set();
+    const updatedPostEntry = new Set();
+
+    for (const r of moomooResults) {
+      if (!r || !cfg.pos.includes(r.p)) continue;
+      // Ignore cached quotes older than when the position was added if already anchored
+      if (r.cached && r.p.entrySynced !== false && r.ts < (r.p.openedAt || 0)) continue;
+      const isPostEntryUpdate = applyQuoteToPosition(
+        r.p,
+        r.price,
+        r.cached ? 'Moomoo cached' : 'Moomoo live',
+        r.ts
+      );
+      if (isPostEntryUpdate) updatedPostEntry.add(r.p);
+      gotMoomoo.add(r.p.code);
+    }
+
+    // Yahoo is fallback only. It never overwrites a successful Moomoo quote in the same cycle.
+    const fallback = cfg.pos.filter(p => !gotMoomoo.has(p.code));
+    const groups = {};
+    fallback.forEach(p => (groups[p.sym + '|' + p.exp] ??= []).push(p));
+
+    for (const key of Object.keys(groups)) {
+      try {
+        const [sym, exp] = key.split('|');
+        const data = await api(`/api/chain?symbol=${encodeURIComponent(sym)}&date=${encodeURIComponent(exp)}`);
+        const option = data.optionChain.result[0].options[0];
+        groups[key].forEach(p => {
+          const c = [...option.calls, ...option.puts].find(x => x.contractSymbol === p.code);
+          if (!c) return;
+          const bid = Number(c.bid), ask = Number(c.ask), last = Number(c.lastPrice);
+          const lastTradeMs = (Number(c.lastTradeDate) || 0) * 1000;
+          const minValidTs = p.entrySyncedAt || p.openedAt || 0;
+
+          // Use midpoint when bid & ask exist so pricing matches Auto-Picks;
+          // only fall back to lastPrice if bid/ask are missing and the trade occurred after add time (or during initial anchor).
+          let price = NaN;
+          if (bid > 0 && ask > 0) {
+            price = (bid + ask) / 2;
+          } else if (last > 0 && (p.entrySynced === false || lastTradeMs >= minValidTs)) {
+            price = last;
+          }
+
+          if (Number.isFinite(price) && price > 0) {
+            const isPostEntryUpdate = applyQuoteToPosition(p, price, 'Yahoo fallback', Date.now());
+            if (isPostEntryUpdate) updatedPostEntry.add(p);
+          }
+        });
+      } catch (e) {}
+    }
+
+    // Enforce catastrophe stops before target checks.
+    if (cfg.autoCloseStop) {
+      for (let i=cfg.pos.length-1;i>=0;i--){const p=cfg.pos[i],live=Number(p.live),stop=Number(p.stop);if(updatedPostEntry.has(p)&&live>0&&stop>0&&live<=stop&&p.ts)closePos(i,'Auto-close: premium stop reached');}
+    }
+    // Evaluate targets only for positions that have moved after their initial add-time baseline sync.
+    if (cfg.autoCloseTarget) {
+      for (let i = cfg.pos.length - 1; i >= 0; i--) {
+        const p = cfg.pos[i], live = Number(p.live), target = Number(p.tgt);
+        if (updatedPostEntry.has(p) && live > 0 && target > 0 && live >= target && p.ts) {
+          closePos(i, 'Auto-close: target reached');
+        }
+      }
+    }
+
+    save();
+  } finally {
+    refreshing = false;
+    if (tab === 'paper' && document.activeElement.tagName !== 'INPUT') render();
+    if (refreshQueued) {
+      refreshQueued = false;
+      refresh();
+    }
+  }
+}
+function rSet() {
+  return `<div class="set">
+    <h3 style="margin-top:0">Terminal Configuration</h3>
+    <label>Local Bridge URL</label>
+    <input id="b" value="${cfg.bridge}">
+    
+    <label>Watchlist Symbols (Comma separated)</label>
+    <input id="u" value="${cfg.uni}">
+
+    <label>Moomoo Fee per Contract ($/side, default: $0.69 including OCC $0.025 &amp; ORF $0.0122)</label>
+    <input id="f" value="${cfg.fee}">
+
+
+    <h3 style="margin-top:28px">Professional Risk Governor</h3>
+    <div class="set-grid">
+      <div><label>Account Equity ($)</label><input id="eq" type="number" min="100" step="100" value="${cfg.accountEquity}"></div>
+      <div><label>Risk per Trade (%)</label><input id="rp" type="number" min="0.1" max="5" step="0.1" value="${cfg.riskPct}"></div>
+      <div><label>Maximum Daily Loss (%)</label><input id="dlp" type="number" min="0.5" max="10" step="0.1" value="${cfg.dailyLossPct}"></div>
+      <div><label>Maximum Open Risk (%)</label><input id="orp" type="number" min="0.5" max="10" step="0.1" value="${cfg.maxOpenRiskPct}"></div>
+      <div><label>Consecutive Loss Lock</label><input id="mcl" type="number" min="1" max="10" step="1" value="${cfg.maxConsecutiveLosses}"></div>
+      <div><label>Maximum Bid/Ask Spread (%)</label><input id="msp" type="number" min="3" max="50" step="1" value="${cfg.maxSpreadPct}"></div>
+    </div>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input id="acs" type="checkbox" ${cfg.autoCloseStop?'checked':''} style="width:auto"> Auto-close when premium stop is reached</label>
+
+    <div style="margin-top: 16px;">
+      <button class="btn pri" onclick="sv()">Save Settings</button>
+      <button class="btn" onclick="dl()">Download Bridge (server.js)</button>
+    </div>
+
+    <h3 style="margin-top:28px">Moomoo OpenAPI Direct Gateway</h3>
+    <label>OpenD Host</label>
+    <input id="mh" value="127.0.0.1">
+
+    <label>OpenD WebSocket Port</label>
+    <input id="mp" value="33333">
+
+    <label>OpenD WebSocket Key (the plain-text password you set in OpenD, not its MD5 hash)</label>
+    <input id="mk" autocomplete="off" placeholder="Leave blank if unchanged">
+
+    <label>API Secret (optional, not used by the OpenD WebSocket login)</label>
+    <input id="ms" type="password" autocomplete="off" placeholder="Leave blank if unchanged">
+
+    <div style="margin-top: 16px;">
+      <button class="btn" onclick="mm()">Connect Gateway</button>
+      <span id="mst" class="mu mono" style="margin-left: 8px;"></span>
+    </div>
+  </div>`;
+}
+
+function dl() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([$('#bridge').textContent.trim() + '\n'], { type: 'text/javascript' }));
+  a.download = 'server.js';
+  a.click();
+}
+
+function sv() {
+  cfg.bridge = $('#b').value.trim();
+  cfg.uni = $('#u').value;
+  cfg.fee = +$('#f').value || 0;
+  cfg.accountEquity=Math.max(100,+$('#eq').value||20000); cfg.riskPct=Math.min(5,Math.max(.1,+$('#rp').value||.5)); cfg.dailyLossPct=Math.min(10,Math.max(.5,+$('#dlp').value||2)); cfg.maxOpenRiskPct=Math.min(10,Math.max(.5,+$('#orp').value||1.5)); cfg.maxConsecutiveLosses=Math.min(10,Math.max(1,+$('#mcl').value||3)); cfg.maxSpreadPct=Math.min(50,Math.max(3,+$('#msp').value||18)); cfg.autoCloseStop=$('#acs').checked;
+  save();
+  ping();
+  alert('Settings saved successfully.');
+  render();
+}
+
+async function mm() {
+  const out = $('#mst');
+  out.className = 'mu mono';
+  try {
+    await fetch(cfg.bridge + '/api/moomoo/config', {
+      method: 'POST',
+      body: JSON.stringify({ key: $('#mk').value, secret: $('#ms').value, host: $('#mh').value, port: +$('#mp').value })
+    });
+    $('#mk').value = $('#ms').value = '';
+    // The login handshake is asynchronous, so poll instead of reading the status once.
+    for (let i = 1; i <= 14; i++) {
+      out.textContent = 'Connecting to OpenD… ' + i + 's';
+      await new Promise(r => setTimeout(r, 1000));
+      const s = await api('/api/moomoo/status');
+      if (s.connected) {
+        out.className = 'g mono';
+        out.textContent = '✔ Connected to OpenD at ' + s.host + ':' + s.port;
+        ping();
+        return;
+      }
+      if (s.error && s.error !== 'connecting') {
+        out.className = 'r mono';
+        out.textContent = '✖ ' + s.error;
+        return;
+      }
+    }
+    out.className = 'r mono';
+    out.textContent = '✖ Timed out waiting for OpenD. Check the bridge terminal for [moomoo] logs.';
+  } catch(e) {
+    out.className = 'r mono';
+    out.textContent = 'Bridge connection failed.';
+  }
+}
+
+async function ping() {
+  try {
+    const st = await api('/api/moomoo/status');
+    $('#dot').classList.add('online');
+    $('#bs').textContent = 'BRIDGE ONLINE' + (st.connected ? ' · MOOMOO LINKED' : '');
+    $('#bs').style.color = 'var(--green)';
+  } catch(e) {
+    $('#dot').classList.remove('online');
+    $('#bs').textContent = 'BRIDGE OFFLINE';
+    $('#bs').style.color = 'var(--red)';
+  }
+}
+
+function render() {
+  $('#v').innerHTML = tab === 'picks' ? rPicks() : tab === 'paper' ? rPaper() : rSet();
+  ['picks', 'paper', 'set'].forEach(t => {
+    const el = document.getElementById('btn-' + t);
+    if (el) el.classList.toggle('on', tab === t);
+  });
+}
+
+function getUsMarketHolidayFixedOrObserved(year) {
+  // Returns a Set of 'YYYY-MM-DD' strings for standard NYSE/US options holidays
+  const holidays = new Set();
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  const addObserved = (month, day) => {
+    const d = new Date(Date.UTC(year, month - 1, day));
+    const dow = d.getUTCDay();
+    if (dow === 6) d.setUTCDate(d.getUTCDate() - 1); // Saturday -> Friday
+    else if (dow === 0) d.setUTCDate(d.getUTCDate() + 1); // Sunday -> Monday
+    holidays.add(fmt(d));
+  };
+  const nthWeekdayOfMonth = (month, weekday, n) => {
+    const first = new Date(Date.UTC(year, month - 1, 1));
+    const offset = (weekday - first.getUTCDay() + 7) % 7;
+    return new Date(Date.UTC(year, month - 1, 1 + offset + (n - 1) * 7));
+  };
+  const lastWeekdayOfMonth = (month, weekday) => {
+    const last = new Date(Date.UTC(year, month, 0));
+    const offset = (last.getUTCDay() - weekday + 7) % 7;
+    return new Date(Date.UTC(year, month - 1, last.getUTCDate() - offset));
+  };
+
+  // Fixed holidays (with weekend observation rules)
+  addObserved(1, 1);   // New Year's Day
+  addObserved(6, 19);  // Juneteenth
+  addObserved(7, 4);   // Independence Day
+  addObserved(12, 25); // Christmas Day
+
+  // Floating weekday holidays
+  holidays.add(fmt(nthWeekdayOfMonth(1, 1, 3))); // MLK Jr. Day (3rd Mon Jan)
+  holidays.add(fmt(nthWeekdayOfMonth(2, 1, 3))); // Presidents' Day (3rd Mon Feb)
+  holidays.add(fmt(lastWeekdayOfMonth(5, 1)));   // Memorial Day (Last Mon May)
+  holidays.add(fmt(nthWeekdayOfMonth(9, 1, 1))); // Labor Day (1st Mon Sep)
+  holidays.add(fmt(nthWeekdayOfMonth(11, 4, 4))); // Thanksgiving Day (4th Thu Nov)
+
+  // Good Friday (2 days before Easter Sunday via Anonymous Gregorian algorithm)
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const easterMonth = Math.floor((h + l - 7 * m + 114) / 31);
+  const easterDay = ((h + l - 7 * m + 114) % 31) + 1;
+  const goodFriday = new Date(Date.UTC(year, easterMonth - 1, easterDay - 2));
+  holidays.add(fmt(goodFriday));
+
+  return holidays;
+}
+
+const usHolidayCache = {};
+function updateUsMarketClock() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZoneName: 'short'
+  }).formatToParts(now);
+
+  const map = {};
+  for (const p of parts) map[p.type] = p.value;
+
+  const year = Number(map.year);
+  const dateKey = `${map.year}-${map.month}-${map.day}`;
+  const hr = Number(map.hour) % 24;
+  const min = Number(map.minute);
+  const sec = Number(map.second);
+  const minsOfDay = hr * 60 + min;
+  const isWeekend = map.weekday === 'Sat' || map.weekday === 'Sun';
+  const holidays = (usHolidayCache[year] ??= getUsMarketHolidayFixedOrObserved(year));
+  const isHoliday = holidays.has(dateKey);
+
+  // Regular US Options / Equity market hours: 09:30 to 16:00 ET
+  const isOpen = !isWeekend && !isHoliday && minsOfDay >= (9 * 60 + 30) && minsOfDay < (16 * 60);
+
+  const dotEl = $('#us-mkt-dot');
+  const lblEl = $('#us-mkt-lbl');
+  const timeEl = $('#us-mkt-time');
+
+  if (dotEl && lblEl) {
+    dotEl.classList.toggle('online', isOpen);
+    lblEl.textContent = isOpen ? 'US MARKET OPEN' : 'US MARKET CLOSED';
+    lblEl.style.color = isOpen ? 'var(--green)' : 'var(--red)';
+  }
+  if (timeEl) {
+    const pad = n => String(n).padStart(2, '0');
+    const tz = map.timeZoneName || 'ET';
+    timeEl.textContent = `${ map.weekday } ${pad(hr)}:${pad(min)}:${pad(sec)} ${tz}`;
+  }
+}
+
+// Initial Boot
+render();
+updateUsMarketClock();
+ping();
+setInterval(updateUsMarketClock, 1000);
+setInterval(ping, 10000);
+setInterval(refresh, 15000);
+</script>
+</body>
+</html>
